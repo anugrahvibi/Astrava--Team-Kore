@@ -1,10 +1,19 @@
-import React, { useMemo } from 'react';
-import Map, { Source, Layer, Marker } from 'react-map-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useEffect, useRef } from 'react';
 import type { InfrastructureNode, Prediction } from '../utils/dataFetcher';
 
-// Dummy token for development if no env var exists. 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+// ─── Zone IDs exactly match ZONE_FLOOD_THRESHOLDS in lstm_predictor.py ────────
+const ZONE_COORDS: Record<string, [number, number]> = {
+  "ZONE_FORT_KOCHI": [9.963, 76.243],
+  "ZONE_VYTTILA": [9.972, 76.303],
+  "ZONE_ERNAKULAM": [9.983, 76.290],
+  "ZONE_KALAMASSERY": [10.054, 76.320],
+  "ZONE_ALUVA": [10.098, 76.356],
+  "ZONE_KAKKANAD": [10.021, 76.341],
+};
+
+function getZoneCoords(zoneId: string): [number, number] {
+  return ZONE_COORDS[zoneId] ?? [9.983, 76.290]; // fallback: Ernakulam center
+}
 
 interface MapViewProps {
   zonesGeoJson: any | null;
@@ -14,92 +23,183 @@ interface MapViewProps {
   selectedZoneId?: string | null;
 }
 
-export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZoneClick, selectedZoneId }: MapViewProps) {
-  
-  // Style config for the geojson source
-  const paintConfig = useMemo(() => {
-    // Generate fill colors based on prediction alerts
-    const matchExpr: any[] = ['match', ['get', 'id']];
-    predictions.forEach(p => {
-      let color = 'rgba(16, 185, 129, 0.08)'; // GREEN
-      if (p.alert_level === 'AMBER') color = 'rgba(245, 158, 11, 0.2)';
-      if (p.alert_level === 'RED') color = 'rgba(239, 68, 68, 0.3)';
-      matchExpr.push(p.zone_id, color);
-    });
-    matchExpr.push('rgba(100, 116, 139, 0.03)'); // default fallback
+export function MapView({ infrastructureNodes, predictions, onZoneClick, selectedZoneId }: MapViewProps) {
+  const mapRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const circleLayersRef = useRef<any[]>([]);
+  const nodeLayersRef = useRef<any[]>([]);
+  const LRef = useRef<any>(null);
 
-    return {
-      'fill-color': matchExpr,
-      'fill-opacity': 0.8,
+  // ── Init map once ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    // Inject Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    import('leaflet').then((L) => {
+      LRef.current = L;
+
+      // Fix Leaflet's default icon paths broken by bundlers
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
+
+      const map = L.map(containerRef.current!, {
+        center: [9.993, 76.295],
+        zoom: 12,
+        zoomControl: true,
+      });
+      mapRef.current = map;
+
+      // Free OpenStreetMap tiles — no API key required
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+    });
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-  }, [predictions]);
+  }, []);
+
+  // ── Re-draw zone circles when predictions update ────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = LRef.current;
+    if (!map || !L || predictions.length === 0) return;
+
+    // Clear old circles
+    circleLayersRef.current.forEach(c => c.remove());
+    circleLayersRef.current = [];
+
+    predictions.forEach((p) => {
+      const coords = getZoneCoords(p.zone_id);
+      const color =
+        p.alert_level === 'RED' ? '#ef4444' :
+          p.alert_level === 'AMBER' ? '#f59e0b' : '#10b981';
+      const pct = Math.round((p.flood_probability ?? 0) * 100);
+      const isSelected = p.zone_id === selectedZoneId;
+      const name = (p as any).zone_name || p.zone_id.replace('ZONE_', '').replace(/_/g, ' ');
+
+      const circle = L.circle(coords, {
+        radius: 1400,          // ~1.4km radius — clearly visible at zoom 12
+        color,
+        fillColor: color,
+        fillOpacity: p.alert_level === 'RED' ? 0.40 : p.alert_level === 'AMBER' ? 0.28 : 0.12,
+        weight: isSelected ? 4 : 2,
+        opacity: 0.9,
+      }).addTo(map);
+
+      // Permanent label for RED/AMBER zones, hover tooltip for GREEN
+      if (p.alert_level !== 'GREEN') {
+        circle.bindTooltip(
+          `<div style="font-family:sans-serif;min-width:140px">
+            <b style="color:${color};font-size:13px">${name}</b><br/>
+            🌊 <b>${pct}%</b> flood risk<br/>
+            ⏱ Lead: ${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h
+          </div>`,
+          { permanent: true, direction: 'top', className: 'cascade-tooltip', offset: [0, -8] }
+        );
+      } else {
+        circle.bindTooltip(`<b>${name}</b> · ${pct}% — Stable`, { direction: 'top' });
+      }
+
+      circle.on('click', () => onZoneClick(p.zone_id));
+      circleLayersRef.current.push(circle);
+    });
+  }, [predictions, selectedZoneId]);
+
+  // ── Draw infrastructure nodes once they arrive ──────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = LRef.current;
+    if (!map || !L || infrastructureNodes.length === 0) return;
+
+    // Clear old node markers
+    nodeLayersRef.current.forEach(m => m.remove());
+    nodeLayersRef.current = [];
+
+    const cfg: Record<string, { color: string; emoji: string }> = {
+      substation: { color: '#ef4444', emoji: '⚡' },
+      water_pump: { color: '#3b82f6', emoji: '💧' },
+      hospital: { color: '#10b981', emoji: '🏥' },
+      road: { color: '#f59e0b', emoji: '🛣️' },
+      comm_tower: { color: '#8b5cf6', emoji: '📡' },
+    };
+
+    infrastructureNodes.forEach((node) => {
+      if (!node.lat || !node.lon) return;
+      const c = cfg[node.type] ?? { color: '#64748b', emoji: '📍' };
+      const icon = L.divIcon({
+        html: `<div style="
+          width:22px;height:22px;border-radius:50%;
+          background:${c.color};border:2px solid white;
+          box-shadow:0 2px 8px ${c.color}99;
+          display:flex;align-items:center;justify-content:center;
+          font-size:11px;cursor:pointer;">${c.emoji}</div>`,
+        className: '',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      });
+      const marker = L.marker([node.lat, node.lon], { icon }).addTo(map);
+      marker.bindTooltip(
+        `<b>${node.name}</b><br/>${node.type.replace(/_/g, ' ')}<br/>Threshold: ${node.flood_threshold}m`,
+        { direction: 'top' }
+      );
+      nodeLayersRef.current.push(marker);
+    });
+  }, [infrastructureNodes]);
 
   return (
-    <div className="w-full h-full relative bg-[#f1f5f9]">
-      <Map
-        mapboxAccessToken={MAPBOX_TOKEN}
-        initialViewState={{
-          longitude: 76.3,
-          latitude: 9.993,
-          zoom: 11
-        }}
-        mapStyle="mapbox://styles/mapbox/light-v11"
-        interactiveLayerIds={['zones-fill']}
-        onClick={(e) => {
-          if (e.features && e.features.length > 0) {
-            const zoneId = e.features[0].properties?.id;
-            if (zoneId) {
-              onZoneClick(zoneId);
-            }
-          } else {
-            onZoneClick('');
-          }
-        }}
-      >
-        {zonesGeoJson && (
-          <Source id="zones" type="geojson" data={zonesGeoJson}>
-            <Layer 
-              id="zones-fill" 
-              type="fill" 
-              paint={paintConfig as any}
-            />
-            <Layer
-              id="zones-line"
-              type="line"
-              paint={{
-                'line-color': ['case', 
-                  ['==', ['get', 'id'], selectedZoneId || ''], '#2563eb',
-                  'rgba(0, 0, 0, 0.08)'
-                ],
-                'line-width': ['case', ['==', ['get', 'id'], selectedZoneId || ''], 3.5, 1]
-              }}
-            />
-          </Source>
-        )}
+    <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden' }}>
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
-        {infrastructureNodes.map((n) => {
-          const colors = {
-            substation: '#ef4444',
-            water_pump: '#3b82f6',
-            hospital: '#10b981',
-            road: '#f59e0b',
-            comm_tower: '#8b5cf6',
-          };
-          const color = colors[n.type as keyof typeof colors] || '#64748b';
-          return (
-            <Marker key={n.id} longitude={n.lon} latitude={n.lat} anchor="center">
-              <div 
-                className="w-5 h-5 rounded-full border-2 border-white shadow-xl cursor-pointer transition-all hover:scale-150 hover:shadow-black/10 z-10"
-                style={{ 
-                   backgroundColor: color,
-                   boxShadow: `0 4px 12px ${color}44`
-                }}
-                title={`${n.name} (${n.type})`}
-              />
-            </Marker>
-          );
-        })}
-      </Map>
+      {/* Risk Legend */}
+      <div style={{
+        position: 'absolute', bottom: 20, right: 20, zIndex: 1000,
+        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)',
+        borderRadius: 12, padding: '10px 14px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.08)',
+        fontFamily: 'sans-serif',
+      }}>
+        <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#64748b', marginBottom: 6 }}>
+          Risk Level
+        </div>
+        {([['#ef4444', 'RED – Critical'], ['#f59e0b', 'AMBER – Elevated'], ['#10b981', 'GREEN – Stable']] as const).map(([color, label]) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: '#374151' }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Loading overlay while predictions not yet arrived */}
+      {predictions.length === 0 && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(2px)',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 13, color: '#64748b' }}>
+            ⏳ Loading live AI data...
+          </div>
+        </div>
+      )}
     </div>
   );
 }

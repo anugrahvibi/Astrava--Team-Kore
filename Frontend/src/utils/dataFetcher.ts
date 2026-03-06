@@ -1,3 +1,5 @@
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
 export interface Zone {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ export interface ZoneFeature {
 
 export interface InfrastructureNode {
   id: string;
-  type: string; // substation, water_pump, hospital, road, comm_tower
+  type: string;
   name: string;
   lat: number;
   lon: number;
@@ -92,7 +94,9 @@ export interface ROIRanking {
   status?: string;
 }
 
-const DEFAULT_TIMEOUT_MS = 7000;
+// ─── Fetch Robustness (Emil's logic) ──────────────────────────────────────────
+
+const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_RETRIES = 2;
 
 function wait(ms: number) {
@@ -133,89 +137,115 @@ async function fetchJsonWithRetry<T>(
         console.warn(`Fetch failed for ${url} after ${retries + 1} attempts`, error);
         return null;
       }
-      await wait(250 * (attempt + 1));
+      await wait(300 * (attempt + 1));
     }
   }
 
   return null;
 }
 
-export async function fetchZones(): Promise<any> {
-  const apiData = await fetchJsonWithRetry<any>('/api/graph');
-  if (apiData) return apiData;
+// ─── Client-side in-memory cache (30s TTL for "live feel") ────────────────────
+const _cache: Map<string, { data: any; expiry: number }> = new Map();
+const CACHE_TTL_MS = 30_000; // Reduced to 30s to match auto-refresh interval
 
+function cacheGet<T>(key: string): T | null {
+  const entry = _cache.get(key);
+  if (entry && Date.now() < entry.expiry) return entry.data as T;
+  return null;
+}
+
+function cacheSet(key: string, data: any) {
+  _cache.set(key, { data, expiry: Date.now() + CACHE_TTL_MS });
+}
+
+// ─── Fetch helpers ────────────────────────────────────────────────────────────
+
+export async function fetchZones(): Promise<any> {
+  const cacheKey = 'zones';
+  const cached = cacheGet<any>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph');
+  if (data) {
+    cacheSet(cacheKey, data);
+    return data;
+  }
+
+  // Fallback to local file
   const fallback = await fetchJsonWithRetry<any>('/data/zones.geojson', { retries: 0, timeoutMs: 5000 });
   return fallback ?? { type: 'FeatureCollection', features: [] };
 }
 
 export async function fetchPredictions(): Promise<Prediction[]> {
-  const data = await fetchJsonWithRetry<{ predictions?: Prediction[] }>('/api/predict/zones');
-  if (data?.predictions && Array.isArray(data.predictions)) {
-    return data.predictions;
+  const cacheKey = 'predictions';
+  const cached = cacheGet<Prediction[]>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<{ predictions?: Prediction[] }>('/api/v1/ml/predict/zones');
+  const predictions = data?.predictions ?? [];
+  if (predictions.length > 0) {
+    cacheSet(cacheKey, predictions);
   }
-  return [];
+  return predictions;
 }
 
 export async function fetchInfrastructure(): Promise<InfrastructureData> {
-  const apiData = await fetchJsonWithRetry<any>('/api/graph');
-  if (apiData) {
-    return { nodes: Object.values(apiData.nodes || {}), edges: apiData.edges || [] };
+  const cacheKey = 'infrastructure';
+  const cached = cacheGet<InfrastructureData>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph');
+  if (data) {
+    const result = { nodes: Object.values(data.nodes || {}), edges: data.edges || [] } as InfrastructureData;
+    cacheSet(cacheKey, result);
+    return result;
   }
 
   const fallback = await fetchJsonWithRetry<InfrastructureData>('/data/infrastructure_vulnerability.json', {
     retries: 0,
     timeoutMs: 5000,
   });
-
   return fallback ?? { nodes: [], edges: [] };
 }
 
 export async function fetchActiveAlerts(role: string): Promise<Alert[]> {
-  const data = await fetchJsonWithRetry<any>(`/api/alerts/summary`);
-  if (!data || !Array.isArray(data.zone_summaries)) {
-    return [];
-  }
+  const cacheKey = `alerts_${role}`;
+  const cached = cacheGet<Alert[]>(cacheKey);
+  if (cached) return cached;
 
-  const allPlans: Alert[] = [];
-  data.zone_summaries.forEach((zone: any) => {
-    if (!Array.isArray(zone?.action_plans)) return;
-    zone.action_plans.forEach((plan: any, planIndex: number) => {
-      if (plan.department === role) {
-        allPlans.push({
-          id: Number(`${Date.parse(zone.timestamp || new Date().toISOString())}${planIndex}`),
-          zone_id: zone.zone_id,
-          alert_level: plan.alert_level,
-          target_role: plan.department,
-          action_text: plan.action,
-          deadline_hrs: plan.time_window_hours,
-          is_active: true,
-          acknowledged: false,
-          created_at: zone.timestamp,
-        });
-      }
+  const data = await fetchJsonWithRetry<any>('/api/v1/ml/alerts/summary?scenario=2018_peak');
+  if (data && Array.isArray(data.zone_summaries)) {
+    const allPlans: Alert[] = [];
+    data.zone_summaries.forEach((zone: any) => {
+      if (!Array.isArray(zone?.action_plans)) return;
+      zone.action_plans.forEach((plan: any, planIndex: number) => {
+        if (!role || plan.department === role) {
+          allPlans.push({
+            id: Number(`${Date.parse(zone.timestamp || new Date().toISOString())}${planIndex}`),
+            zone_id: zone.zone_id,
+            alert_level: plan.alert_level,
+            target_role: plan.department,
+            action_text: plan.action,
+            deadline_hrs: plan.time_window_hours,
+            is_active: true,
+            acknowledged: false,
+            created_at: zone.timestamp,
+          });
+        }
+      });
     });
-  });
-
-  if (allPlans.length === 0) {
-    console.warn(`No active alert plans for role: ${role}`);
+    cacheSet(cacheKey, allPlans);
+    return allPlans;
   }
-
-  return allPlans;
+  return [];
 }
 
 export async function fetchSensorReadings(zoneId: string): Promise<SensorReading[]> {
-  const historyData = await fetchJsonWithRetry<SensorReading[]>(`/api/v1/sensors/${zoneId}/history`);
-  if (Array.isArray(historyData) && historyData.length > 0) {
-    return historyData;
-  }
-
   const latestData = await fetchJsonWithRetry<SensorReading>(`/api/v1/sensors/${zoneId}/latest`, {
     retries: 1,
     timeoutMs: 5000,
   });
-  if (latestData) return [latestData];
-
-  return [];
+  return latestData ? [latestData] : [];
 }
 
 export async function fetchCascadeAnalysis(zoneId: string): Promise<any> {
@@ -223,30 +253,46 @@ export async function fetchCascadeAnalysis(zoneId: string): Promise<any> {
 }
 
 export async function fetchVulnerabilities(): Promise<VulnerabilityData | null> {
-  return await fetchJsonWithRetry<VulnerabilityData>('/api/analytics/vulnerability-map');
+  const cacheKey = 'vulnerabilities';
+  const cached = cacheGet<VulnerabilityData>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<VulnerabilityData>('/api/v1/ml/analytics/vulnerability-map');
+  if (data) {
+    cacheSet(cacheKey, data);
+    return data;
+  }
+  return null;
 }
 
 export async function fetchLeadTimes(): Promise<LeadTimeTicker[]> {
-  const data = await fetchJsonWithRetry<{ lead_time_tickers?: LeadTimeTicker[] }>('/api/lead-time');
-  if (data?.lead_time_tickers && Array.isArray(data.lead_time_tickers)) {
-    return data.lead_time_tickers;
+  const cacheKey = 'lead_times';
+  const cached = cacheGet<LeadTimeTicker[]>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<{ lead_time_tickers?: LeadTimeTicker[] }>('/api/v1/ml/lead-times?scenario=2018_peak');
+  const tickers = data?.lead_time_tickers ?? [];
+  if (tickers.length > 0) {
+    cacheSet(cacheKey, tickers);
   }
-  return [];
+  return tickers;
 }
 
 export async function fetchROIRankings(): Promise<ROIRanking[]> {
-  const data = await fetchJsonWithRetry<{ top_10_by_roi?: any[] }>('/api/roi/rank');
-  if (!data?.top_10_by_roi || !Array.isArray(data.top_10_by_roi)) {
-    return [];
+  const cacheKey = 'roi_rankings';
+  const cached = cacheGet<ROIRanking[]>(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJsonWithRetry<{ top_10_by_roi?: any[] }>('/api/v1/ml/roi/rank');
+  if (data?.top_10_by_roi && Array.isArray(data.top_10_by_roi)) {
+    const rankings = data.top_10_by_roi.map((item: any) => ({
+      node_id: item.node_id,
+      original_impact: item.lives_saved || 0,
+      lives_saved: item.approximate_lives_saved || 0,
+      lives_saved_per_rupee: item.lives_saved_per_rupee || 0,
+    }));
+    cacheSet(cacheKey, rankings);
+    return rankings;
   }
-
-  return data.top_10_by_roi.map((item: any) => ({
-    node_id: item.node_id,
-    original_impact: item.lives_saved || 0,
-    lives_saved: item.approximate_lives_saved || 0,
-    lives_saved_per_rupee: item.lives_saved_per_rupee || 0,
-  }));
+  return [];
 }
-
-
-// Predictions are now expected exclusively from the backend AI/ML models.

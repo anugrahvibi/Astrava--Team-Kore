@@ -7,6 +7,8 @@ import copy
 import json
 import os
 import sys
+import threading
+import time
 
 # Ensure src is importable when running from AI_ML root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,6 +48,20 @@ _hazard_gen: HazardGenerator | None = None
 _scenarios: list[dict] | None = None
 _baseline_results: list[dict] | None = None
 _original_thresholds: dict = {}
+_pipeline_lock = threading.Lock()  # Prevents concurrent pipeline initializations
+
+# ─── Simple in-memory response cache (TTL = 60s) ─────────────────────────────
+_cache: dict = {}            # key -> (value, expiry_timestamp)
+_CACHE_TTL = 60              # seconds
+
+def _cache_get(key: str):
+    entry = _cache.get(key)
+    if entry and time.time() < entry[1]:
+        return entry[0]
+    return None
+
+def _cache_set(key: str, value):
+    _cache[key] = (value, time.time() + _CACHE_TTL)
 
 # New: LSTM + Action Router singletons
 _lstm_predictor: LSTMFloodPredictor | None = None
@@ -72,13 +88,18 @@ def _get_router():
 
 
 def _get_pipeline():
-    """Lazy-initialize the pipeline on first request."""
+    """Lazy-initialize the pipeline on first request (thread-safe)."""
     global _dep_graph, _hazard_gen, _scenarios, _baseline_results, _original_thresholds
 
-    if _baseline_results is None:
+    if _baseline_results is not None:
+        return _dep_graph, _hazard_gen, _scenarios, _baseline_results
+
+    with _pipeline_lock:
+        # Double-check inside lock in case another thread finished first
+        if _baseline_results is not None:
+            return _dep_graph, _hazard_gen, _scenarios, _baseline_results
+
         print("[API] Initializing pipeline...")
-        # Avoid double-initializing if another thread is already working on it
-        # (For a true fix we'd use a threading lock, but this is a hackathon)
         dg = DependencyGraph()
         dg.build()
         _original_thresholds = dg.get_node_original_thresholds()
@@ -109,14 +130,42 @@ class HardenRequest(BaseModel):
 
 # ─── Endpoints ───────────────────────────────────────────────────────────────
 
+@app.on_event("startup")
+def _startup_prewarm():
+    """Pre-warm the heavy pipeline and LSTM model in background threads at server start."""
+    def _warm_pipeline():
+        try:
+            print("[STARTUP] Pre-warming cascade pipeline in background...")
+            _get_pipeline()
+            print("[STARTUP] Cascade pipeline warm ✓")
+        except Exception as e:
+            print(f"[STARTUP] Pipeline warm failed: {e}")
+
+    def _warm_lstm():
+        try:
+            print("[STARTUP] Pre-warming LSTM predictor in background...")
+            _get_lstm()
+            print("[STARTUP] LSTM predictor warm ✓")
+        except Exception as e:
+            print(f"[STARTUP] LSTM warm failed: {e}")
+
+    threading.Thread(target=_warm_pipeline, daemon=True).start()
+    threading.Thread(target=_warm_lstm, daemon=True).start()
+
+
 @app.get("/", tags=["Health"])
 def health():
     """Health check endpoint. Returns system status."""
+    pipeline_ready = _baseline_results is not None
+    lstm_ready = _lstm_predictor is not None and _lstm_predictor._trained
     return {
         "status": "online",
         "project": "CascadeNet 2.0",
         "description": "Infrastructure cascade failure prediction — Kochi, Kerala",
         "team": "Asthrava Hackathon",
+        "ready": pipeline_ready and lstm_ready,
+        "pipeline_ready": pipeline_ready,
+        "lstm_ready": lstm_ready,
         "endpoints": ["/simulate", "/scenarios", "/graph", "/harden/{node_id}", "/roi/rank"],
     }
 
@@ -154,9 +203,14 @@ def get_scenarios():
 
 @app.get("/graph", tags=["Infrastructure"])
 def get_graph():
-    """Return the full infrastructure graph (nodes + RF-weighted edges)."""
+    """Return the full infrastructure graph (nodes + RF-weighted edges). Cached 60s."""
+    cached = _cache_get("graph")
+    if cached is not None:
+        return cached
     dg, _, _, _ = _get_pipeline()
-    return dg.to_dict()
+    result = dg.to_dict()
+    _cache_set("graph", result)
+    return result
 
 
 @app.get("/node/{node_id}", tags=["Infrastructure"])
@@ -529,11 +583,15 @@ def impact_zones(hour: int, scenario_id: int = 1):
 
 @app.get('/predict/zones', tags=['Flood Prediction'])
 def predict_all_zones():
+    """Get flood predictions for all zones. Cached 60s."""
+    cached = _cache_get("predict_zones")
+    if cached is not None:
+        return cached
     lstm = _get_lstm()
     results = lstm.predict_all_zones()
     red_count = sum(1 for r in results if r['alert_level'] == 'RED')
-    orange_count = sum(1 for r in results if r['alert_level'] == 'ORANGE')
-    return {
+    orange_count = sum(1 for r in results if r['alert_level'] in ('ORANGE', 'AMBER'))
+    response = {
         'status': 'success',
         'total_zones': len(results),
         'red_zones': red_count,
@@ -541,6 +599,8 @@ def predict_all_zones():
         'overall_threat_level': 'RED' if red_count > 0 else ('ORANGE' if orange_count > 0 else 'GREEN'),
         'predictions': results,
     }
+    _cache_set("predict_zones", response)
+    return response
 
 
 @app.get('/predict/zone/{zone_id}', tags=['Flood Prediction'])
@@ -584,6 +644,11 @@ def trigger_alert(zone_id: str, scenario: str = 'current', reservoir_pct: float 
 
 @app.get('/alerts/summary', tags=['Actionability Layer'])
 def get_alert_summary(scenario: str = 'current'):
+    """Get alert summaries. Cached 60s per scenario."""
+    cache_key = f"alerts_summary_{scenario}"
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
     lstm = _get_lstm()
     router = _get_router()
     if scenario in ('2018_peak', 'moderate'):
@@ -591,12 +656,19 @@ def get_alert_summary(scenario: str = 'current'):
     else:
         predictions = lstm.predict_all_zones()
     summaries = router.get_all_zone_summaries(predictions)
-    return {'status': 'success', 'scenario': scenario, 'total_zones_alerted': len(summaries), 'zone_summaries': summaries}
+    response = {'status': 'success', 'scenario': scenario, 'total_zones_alerted': len(summaries), 'zone_summaries': summaries}
+    _cache_set(cache_key, response)
+    return response
 
 
 @app.get('/lead-time', tags=['Flood Prediction'])
 def get_lead_times(scenario: str = 'current'):
+    """Get lead time tickers. Cached 60s per scenario."""
     import datetime as dt
+    cache_key = f"lead_times_{scenario}"
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
     lstm = _get_lstm()
     if scenario in ('2018_peak', 'moderate'):
         predictions = lstm.simulate_scenario(scenario)
@@ -614,4 +686,6 @@ def get_lead_times(scenario: str = 'current'):
             'stakeholder_action_windows': {s: max(lead - w, 0) for s, w in stakeholder_deadlines.items()},
             'status': 'CRITICAL' if lead <= 4 else ('URGENT' if lead <= 8 else 'MONITORING'),
         })
-    return {'status': 'success', 'scenario': scenario, 'generated_at': dt.datetime.now().isoformat(), 'lead_time_tickers': tickers}
+    response = {'status': 'success', 'scenario': scenario, 'generated_at': dt.datetime.now().isoformat(), 'lead_time_tickers': tickers}
+    _cache_set(cache_key, response)
+    return response

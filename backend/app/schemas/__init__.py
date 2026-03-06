@@ -1,21 +1,11 @@
 """
 CascadeNet Backend — Pydantic Schemas
 Request/response models for all API endpoints.
-Refactored for dual Pydantic V1/V2 compatibility.
+Compatible with Pydantic v2.
 """
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-
-# Determine Pydantic version and define a common Config
-import pydantic
-PYDANTIC_V2 = pydantic.VERSION.startswith("2.")
-
-class SchemaConfig:
-    if PYDANTIC_V2:
-        from_attributes = True
-    else:
-        orm_mode = True
+from pydantic import BaseModel, Field, ConfigDict
 
 # ─── Common ───────────────────────────────────────────────────────────────────
 
@@ -32,6 +22,8 @@ class SensorSignals(BaseModel):
     reservoir_pct: bool = False
 
 class SensorReadingOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     zone_id: str
     timestamp: datetime
     rainfall_mmhr: Optional[float] = None
@@ -47,8 +39,6 @@ class SensorReadingOut(BaseModel):
     river_source: str
     reservoir_source: str
 
-    Config = SchemaConfig
-
 class SensorReadingCreate(BaseModel):
     zone_id: str
     rainfall_mmhr: Optional[float] = None
@@ -60,6 +50,8 @@ class SensorReadingCreate(BaseModel):
 # ─── Zone ─────────────────────────────────────────────────────────────────────
 
 class ZoneSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     name: str
     region: str
@@ -71,11 +63,11 @@ class ZoneSummary(BaseModel):
     projected_water_level_m: Optional[float] = None
     lead_time_hrs: Optional[float] = None
 
-    Config = SchemaConfig
-
 # ─── Predictions ──────────────────────────────────────────────────────────────
 
 class PredictionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     zone_id: str
     predicted_at: datetime
     flood_probability: float = Field(..., ge=0, le=1)
@@ -86,8 +78,6 @@ class PredictionOut(BaseModel):
     signals: SensorSignals
     two_signal_confirmed: bool
     model_version: str
-
-    Config = SchemaConfig
 
 # ─── Cascade Infrastructure ───────────────────────────────────────────────────
 
@@ -114,6 +104,8 @@ class CascadeOut(BaseModel):
 # ─── Alerts ───────────────────────────────────────────────────────────────────
 
 class AlertOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     zone_id: str
     alert_level: str
@@ -124,8 +116,6 @@ class AlertOut(BaseModel):
     is_active: bool
     acknowledged: bool
     created_at: datetime
-
-    Config = SchemaConfig
 
 class AcknowledgeRequest(BaseModel):
     acknowledged_by: str
@@ -155,6 +145,8 @@ class ActionBundle(BaseModel):
 # ─── Infrastructure Nodes ─────────────────────────────────────────────────────
 
 class InfrastructureNodeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     zone_id: str
     node_type: str
@@ -168,8 +160,6 @@ class InfrastructureNodeOut(BaseModel):
     action_template: Optional[str] = None
     responsible_dept: str
     current_status: str
-
-    Config = SchemaConfig
 
 # ─── Simulation ───────────────────────────────────────────────────────────────
 
