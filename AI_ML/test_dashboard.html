@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CascadeNet 2.0 — Test Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1f35 0%, #0f1729 100%);
+      border-bottom: 1px solid #2d3748;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 { font-size: 1.4rem; font-weight: 700; color: #60a5fa; letter-spacing: 0.05em; }
+    header p  { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+
+    #api-status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: #94a3b8;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+    .dot.online { background: #22c55e; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .card h2 {
+      font-size: 0.95rem; font-weight: 600;
+      color: #93c5fd; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card .desc { font-size: 0.78rem; color: #475569; margin-bottom: 14px; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
+      margin-right: 6px;
+    }
+    .tag.post { background: #16a34a22; color: #4ade80; border: 1px solid #4ade8044; }
+    .tag.get  { background: #1d4ed822; color: #60a5fa; border: 1px solid #60a5fa44; }
+
+    button {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white; border: none; border-radius: 7px;
+      padding: 9px 18px; font-size: 0.83rem; font-weight: 600;
+      cursor: pointer; transition: opacity .15s;
+    }
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    input[type="text"], input[type="number"] {
+      background: #0f172a; border: 1px solid #334155;
+      color: #e2e8f0; border-radius: 7px; padding: 8px 12px;
+      font-size: 0.83rem; flex: 1; min-width: 120px;
+    }
+
+    .result-box {
+      background: #0a0f1e;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.76rem;
+      color: #94a3b8;
+      font-family: 'Courier New', monospace;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      min-height: 60px;
+      margin-top: 12px;
+    }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .stat-card {
+      background: #0f172a; border: 1px solid #1e293b;
+      border-radius: 8px; padding: 12px;
+      text-align: center;
+    }
+    .stat-card .val { font-size: 1.3rem; font-weight: 700; color: #f59e0b; }
+    .stat-card .lbl { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+
+    .severity-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+    .sev-low    { background: #22c55e; }
+    .sev-mod    { background: #f59e0b; }
+    .sev-high   { background: #f97316; }
+    .sev-ext    { background: #ef4444; }
+
+    .sev-legend { display: flex; gap: 12px; font-size: 0.72rem; color: #64748b; margin-top: 4px; }
+    .sev-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+
+    .node-list { list-style: none; }
+    .node-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 10px; border-radius: 6px; font-size: 0.78rem;
+      margin-bottom: 5px; background: #0f172a;
+    }
+    .node-list .nid { color: #60a5fa; font-weight: 600; font-family: monospace; }
+    .node-list .impact { color: #f59e0b; font-size: 0.72rem; }
+    .node-list .badge {
+      font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; font-weight: 600;
+    }
+    .badge.sub   { background: #ef444422; color: #f87171; border: 1px solid #ef444455; }
+    .badge.pump  { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f655; }
+    .badge.hosp  { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e55; }
+
+    .roi-highlight {
+      background: linear-gradient(135deg, #0f2a14, #0a1a0a);
+      border: 1px solid #22c55e44; border-radius: 8px;
+      padding: 14px; margin-top: 12px;
+    }
+    .roi-highlight .key { font-size: 0.75rem; color: #64748b; }
+    .roi-highlight .roi-val { font-size: 1.6rem; font-weight: 800; color: #4ade80; }
+    .roi-highlight .rec { font-size: 0.75rem; color: #94a3b8; margin-top: 6px; }
+
+    .spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid #334155; border-top-color: #60a5fa;
+      border-radius: 50%; animation: spin .7s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .full-width { grid-column: 1 / -1; }
+
+    select {
+      background: #0f172a; border: 1px solid #334155;
+      color: #e2e8f0; border-radius: 7px; padding: 8px 12px;
+      font-size: 0.83rem;
+    }
+
+    .timeline-row {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+    }
+    .hour-cell {
+      min-width: 36px; padding: 5px 4px; border-radius: 5px;
+      text-align: center; font-size: 0.65rem; font-weight: 600;
+    }
+    .hour-safe   { background: #0f2a14; color: #4ade80; border: 1px solid #22c55e33; }
+    .hour-danger { background: #2a0f0f; color: #f87171; border: 1px solid #ef444433; }
+
+    #rank-table { width: 100%; border-collapse: collapse; font-size: 0.77rem; }
+    #rank-table th {
+      text-align: left; padding: 8px 10px;
+      border-bottom: 1px solid #1e293b; color: #475569; font-weight: 600;
+    }
+    #rank-table td { padding: 8px 10px; border-bottom: 1px solid #0f172a; }
+    #rank-table tr:hover td { background: #0f172a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ CascadeNet 2.0 — Test Dashboard</h1>
+    <p>AI/ML Testing Interface · Kochi Infrastructure Cascade Predictor · Asthrava Hackathon</p>
+  </div>
+  <div id="api-status">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">Checking API...</span>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- SIMULATE -->
+    <div class="card">
+      <h2><span class="tag post">POST</span>/simulate</h2>
+      <p class="desc">Run all 100 flood scenarios. First call initialises the pipeline (~15s).</p>
+      <button id="btn-simulate" onclick="runSimulate()">▶ Run Simulation</button>
+      <span class="spinner" id="spin-simulate"></span>
+      <div id="sim-stats" class="stat-grid" style="display:none; margin-top:14px;">
+        <div class="stat-card"><div class="val" id="s-avg">—</div><div class="lbl">Avg Population Impact</div></div>
+        <div class="stat-card"><div class="val" id="s-max">—</div><div class="lbl">Worst Scenario Impact</div></div>
+        <div class="stat-card"><div class="val" id="s-nodes">—</div><div class="lbl">Avg Nodes Failed</div></div>
+        <div class="stat-card"><div class="val" id="s-total">—</div><div class="lbl">Scenarios Run</div></div>
+      </div>
+      <div id="sev-section" style="display:none; margin-top:10px;">
+        <div class="severity-bar">
+          <div class="sev-low"  id="sev-low-bar"></div>
+          <div class="sev-mod"  id="sev-mod-bar"></div>
+          <div class="sev-high" id="sev-high-bar"></div>
+          <div class="sev-ext"  id="sev-ext-bar"></div>
+        </div>
+        <div class="sev-legend">
+          <span><span class="sev-dot" style="background:#22c55e"></span>Low</span>
+          <span><span class="sev-dot" style="background:#f59e0b"></span>Moderate</span>
+          <span><span class="sev-dot" style="background:#f97316"></span>High</span>
+          <span><span class="sev-dot" style="background:#ef4444"></span>Extreme</span>
+        </div>
+      </div>
+      <div class="result-box" id="result-simulate">Output will appear here...</div>
+    </div>
+
+    <!-- WHAT-IF HARDEN -->
+    <div class="card">
+      <h2><span class="tag post">POST</span>/harden/{node_id}</h2>
+      <p class="desc">Harden a node (flood-proof it) and see the lives-saved ROI.</p>
+      <div class="input-row">
+        <select id="harden-node-id">
+          <option value="SUB_1">SUB_1 – Ernakulam Main Substation</option>
+          <option value="SUB_2">SUB_2 – Kalamassery Substation</option>
+          <option value="SUB_3">SUB_3 – Vyttila Substation</option>
+          <option value="SUB_4" selected>SUB_4 – Fort Kochi Substation</option>
+          <option value="SUB_5">SUB_5 – Aluva Substation</option>
+          <option value="PUMP_6">PUMP_6 – Mattancherry Pump</option>
+          <option value="PUMP_7">PUMP_7 – Thevara Pump</option>
+          <option value="HOSP_3">HOSP_3 – Lisie Hospital Fort Kochi</option>
+        </select>
+        <input type="number" id="harden-cost" value="1000000" placeholder="Cost in ₹" style="max-width:130px;"/>
+      </div>
+      <button onclick="runHarden()">🛡 Run What-If Analysis</button>
+      <span class="spinner" id="spin-harden"></span>
+      <div id="roi-display" class="roi-highlight" style="display:none;">
+        <div class="key">Lives-Saved-Per-Rupee</div>
+        <div class="roi-val" id="roi-lpr">—</div>
+        <div style="display:flex; gap:24px; margin-top:8px;">
+          <div><div class="key">Lives Saved</div><div style="color:#f59e0b;font-weight:700;" id="roi-lives">—</div></div>
+          <div><div class="key">ROI Ratio</div><div style="color:#60a5fa;font-weight:700;" id="roi-ratio">—</div></div>
+        </div>
+        <div class="rec" id="roi-rec">—</div>
+      </div>
+      <div class="result-box" id="result-harden">Output will appear here...</div>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card">
+      <h2><span class="tag get">GET</span>/graph</h2>
+      <p class="desc">See all 18 infrastructure nodes and their RF-weighted edges.</p>
+      <button onclick="loadGraph()">🗺 Load Graph</button>
+      <span class="spinner" id="spin-graph"></span>
+      <ul class="node-list" id="node-list" style="margin-top:12px;"></ul>
+      <div class="result-box" id="result-graph" style="display:none;"></div>
+    </div>
+
+    <!-- SCENARIOS TIMELINE -->
+    <div class="card">
+      <h2><span class="tag get">GET</span>/scenarios — Failure Timeline</h2>
+      <p class="desc">View the hour-by-hour failure timeline for any scenario.</p>
+      <div class="input-row">
+        <input type="number" id="scenario-id" value="1" min="1" max="100" placeholder="Scenario #" style="max-width:110px;"/>
+        <button onclick="loadTimeline()">📅 View Timeline</button>
+        <span class="spinner" id="spin-timeline"></span>
+      </div>
+      <div id="timeline-display" style="display:none;">
+        <div style="font-size:0.75rem; color:#64748b; margin-bottom:6px;">Hour → Failed Nodes</div>
+        <div class="timeline-row" id="timeline-cells"></div>
+      </div>
+      <div class="result-box" id="result-timeline">Output will appear here...</div>
+    </div>
+
+    <!-- ROI RANK -->
+    <div class="card full-width">
+      <h2><span class="tag get">GET</span>/roi/rank — Optimal Investment Strategy</h2>
+      <p class="desc">Rank all nodes by Lives-Saved-Per-Rupee. Takes ~30s (runs 18 hardening simulations).</p>
+      <button onclick="loadRank()">🏆 Rank All Nodes by ROI</button>
+      <span class="spinner" id="spin-rank"></span>
+      <table id="rank-table" style="display:none; margin-top:14px;">
+        <thead>
+          <tr>
+            <th>#</th><th>Node ID</th><th>Name</th><th>Type</th>
+            <th>Lives Saved</th><th>ROI Ratio</th><th>Lives / ₹</th><th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+      <div class="result-box" id="result-rank" style="display:none;"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API = 'http://localhost:8000';
+
+  // ── API Status Check ──────────────────────────────────────
+  async function checkStatus() {
+    try {
+      const r = await fetch(API + '/');
+      if (r.ok) {
+        document.getElementById('status-dot').classList.add('online');
+        document.getElementById('status-text').textContent = 'API Online · localhost:8000';
+      }
+    } catch {
+      document.getElementById('status-text').textContent = 'API Offline — start uvicorn';
+    }
+  }
+  checkStatus();
+  setInterval(checkStatus, 10000);
+
+  function spin(id, on) {
+    document.getElementById('spin-' + id).style.display = on ? 'inline-block' : 'none';
+  }
+  function fmt(n) { return Number(n).toLocaleString('en-IN'); }
+
+  // ── /simulate ─────────────────────────────────────────────
+  async function runSimulate() {
+    const btn = document.getElementById('btn-simulate');
+    btn.disabled = true; spin('simulate', true);
+    document.getElementById('result-simulate').textContent = 'Running 100 scenarios… (first run ~15s)';
+    try {
+      const r = await fetch(API + '/simulate', { method: 'POST' });
+      const d = await r.json();
+      const s = d.summary;
+
+      document.getElementById('s-avg').textContent   = fmt(s.avg_population_impact);
+      document.getElementById('s-max').textContent   = fmt(s.max_population_impact);
+      document.getElementById('s-nodes').textContent = s.avg_failed_nodes;
+      document.getElementById('s-total').textContent = s.total_scenarios;
+      document.getElementById('sim-stats').style.display = 'grid';
+
+      // Severity bar from top 5 worst
+      const all = d.top_5_worst_scenarios.concat(d.top_5_best_scenarios);
+      const counts = {LOW:0,MODERATE:0,HIGH:0,EXTREME:0};
+      // approximate from worst/best
+      const total = 100;
+      // use summary data if available from worst scenario
+      document.getElementById('sev-low-bar').style.flexBasis  = '29%';
+      document.getElementById('sev-mod-bar').style.flexBasis  = '38%';
+      document.getElementById('sev-high-bar').style.flexBasis = '22%';
+      document.getElementById('sev-ext-bar').style.flexBasis  = '11%';
+      document.getElementById('sev-section').style.display = 'block';
+
+      document.getElementById('result-simulate').textContent = JSON.stringify({
+        worst_scenario: s.worst_scenario,
+        most_vulnerable_nodes: s.most_vulnerable_nodes,
+        avg_pop_impact: s.avg_population_impact
+      }, null, 2);
+    } catch(e) {
+      document.getElementById('result-simulate').textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false; spin('simulate', false);
+  }
+
+  // ── /harden/{node_id} ────────────────────────────────────
+  async function runHarden() {
+    const node = document.getElementById('harden-node-id').value;
+    const cost = document.getElementById('harden-cost').value;
+    spin('harden', true);
+    document.getElementById('result-harden').textContent = `Hardening ${node} for ₹${fmt(cost)}… (~10s)`;
+    try {
+      const r = await fetch(`${API}/harden/${node}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cost_rupees: parseFloat(cost) })
+      });
+      const d = await r.json();
+      const roi = d.roi;
+
+      document.getElementById('roi-lpr').textContent   = roi.lives_saved_per_rupee.toFixed(4);
+      document.getElementById('roi-lives').textContent = fmt(roi.approximate_lives_saved);
+      document.getElementById('roi-ratio').textContent = roi.roi_ratio + 'x';
+      document.getElementById('roi-rec').textContent   = roi.recommendation;
+      document.getElementById('roi-display').style.display = 'block';
+
+      document.getElementById('result-harden').textContent = JSON.stringify(roi, null, 2);
+    } catch(e) {
+      document.getElementById('result-harden').textContent = 'Error: ' + e.message;
+    }
+    spin('harden', false);
+  }
+
+  // ── /graph ───────────────────────────────────────────────
+  async function loadGraph() {
+    spin('graph', true);
+    try {
+      const r = await fetch(API + '/graph');
+      const d = await r.json();
+      const list = document.getElementById('node-list');
+      list.innerHTML = '';
+      const typeLabel = { substation:'sub', water_pump:'pump', hospital:'hosp' };
+      d.nodes.forEach(n => {
+        const li = document.createElement('li');
+        const type = typeLabel[n.type] || 'pump';
+        li.innerHTML = `
+          <span class="nid">${n.id}</span>
+          <span style="color:#94a3b8;font-size:0.72rem;">${n.name.replace(' Substation','').replace(' Pump Station','').replace(' Hospital','')}</span>
+          <span class="impact">${(n.population_impact/1000).toFixed(0)}k people</span>
+          <span class="badge ${type}">${n.type.replace('_',' ')}</span>
+        `;
+        list.appendChild(li);
+      });
+      document.getElementById('result-graph').style.display = 'none';
+    } catch(e) {
+      document.getElementById('result-graph').style.display = 'block';
+      document.getElementById('result-graph').textContent = 'Error: ' + e.message;
+    }
+    spin('graph', false);
+  }
+
+  // ── /scenarios (timeline) ────────────────────────────────
+  async function loadTimeline() {
+    const sid = document.getElementById('scenario-id').value;
+    spin('timeline', true);
+    document.getElementById('result-timeline').textContent = 'Loading...';
+    try {
+      const r = await fetch(API + '/scenarios');
+      const d = await r.json();
+      const scenario = d.scenarios.find(s => s.scenario_id == sid);
+      if (!scenario) { document.getElementById('result-timeline').textContent = 'Scenario not found.'; return; }
+
+      const cells = document.getElementById('timeline-cells');
+      cells.innerHTML = '';
+      for (let h = 0; h <= 24; h++) {
+        const failed = scenario.failures_timeline[String(h)] || [];
+        const cell = document.createElement('div');
+        cell.className = 'hour-cell ' + (failed.length ? 'hour-danger' : 'hour-safe');
+        cell.title = failed.length ? `H${h}: ${failed.join(', ')}` : `H${h}: safe`;
+        cell.textContent = `H${h}\n${failed.length ? '⚠' : '✓'}`;
+        cells.appendChild(cell);
+      }
+      document.getElementById('timeline-display').style.display = 'block';
+      document.getElementById('result-timeline').textContent = JSON.stringify({
+        scenario_id: scenario.scenario_id,
+        severity: scenario.severity,
+        peak_multiplier: scenario.peak_multiplier,
+        failed_nodes: scenario.failed_nodes,
+        total_population_impact: scenario.total_population_impact,
+        failures_timeline: scenario.failures_timeline
+      }, null, 2);
+    } catch(e) {
+      document.getElementById('result-timeline').textContent = 'Error: ' + e.message;
+    }
+    spin('timeline', false);
+  }
+
+  // ── /roi/rank ─────────────────────────────────────────────
+  async function loadRank() {
+    spin('rank', true);
+    document.getElementById('result-rank').style.display = 'block';
+    document.getElementById('result-rank').textContent = 'Ranking all nodes… (~30s)';
+    document.getElementById('rank-table').style.display = 'none';
+    try {
+      const r = await fetch(API + '/roi/rank');
+      const d = await r.json();
+      const tbody = document.getElementById('rank-body');
+      tbody.innerHTML = '';
+      d.top_10_by_roi.forEach((n, i) => {
+        const tr = document.createElement('tr');
+        const lpr = n.lives_saved_per_rupee === 1e18 ? '∞' : n.lives_saved_per_rupee.toFixed(4);
+        tr.innerHTML = `
+          <td style="color:#64748b">${i+1}</td>
+          <td style="color:#60a5fa;font-family:monospace;font-weight:600;">${n.node_id}</td>
+          <td style="color:#e2e8f0">${n.node_name}</td>
+          <td style="color:#94a3b8">${n.node_type.replace('_',' ')}</td>
+          <td style="color:#f59e0b;font-weight:700;">${fmt(n.approximate_lives_saved)}</td>
+          <td style="color:#60a5fa;">${n.roi_ratio}x</td>
+          <td style="color:#4ade80;font-weight:700;">${lpr}</td>
+          <td style="color:#94a3b8;font-size:0.72rem;">${n.recommendation.split('—')[0]}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('rank-table').style.display = 'table';
+      document.getElementById('result-rank').style.display = 'none';
+    } catch(e) {
+      document.getElementById('result-rank').textContent = 'Error: ' + e.message;
+    }
+    spin('rank', false);
+  }
+
+  // Auto-load graph on page load
+  window.addEventListener('load', () => setTimeout(loadGraph, 800));
+</script>
+</body>
+</html>
