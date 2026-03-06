@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchROIRankings } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, ROIRanking } from '../utils/dataFetcher';
 import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info, Clock } from 'lucide-react';
@@ -40,7 +41,6 @@ export function DistrictAdminDashboard() {
     return acc;
   }, 0);
 
-  return (
   return (
     <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">

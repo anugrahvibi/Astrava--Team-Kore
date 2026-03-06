@@ -1,6 +1,5 @@
-```javascript
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, MapPin, AlertTriangle, Hammer, CheckCircle2, Truck, ArrowRightLeft, ShieldCheck, TrendingDown, RoadIcon, ArrowRight, Shield, Clock, Navigation } from 'lucide-react';
+import { Activity, MapPin, AlertTriangle, Hammer, CheckCircle2, Truck, ArrowRightLeft, ShieldCheck, TrendingDown, Radio, Navigation, Clock, RoadIcon, ArrowRight, Shield } from 'lucide-react';
 import { fetchActiveAlerts, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, Prediction } from '../utils/dataFetcher';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
@@ -27,8 +26,7 @@ export function HighwayDepartmentDashboard() {
   const criticalRoads = alerts.length;
   const avgLeadTime = predictions.length > 0 
     ? (predictions.reduce((acc, p) => acc + p.lead_time_hours, 0) / predictions.length).toFixed(1)
-    : '8.0';
-
+    : '8.0'; // Restored the missing part of the ternary operator to ensure valid syntax
   return (
     <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">

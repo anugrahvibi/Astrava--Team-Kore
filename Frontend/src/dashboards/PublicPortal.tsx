@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, AlertTriangle, Shield, CheckCircle2, Navigation, Activity, ChevronRight, Info, InfoIcon } from 'lucide-react';
 import { fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
 import type { Prediction, Alert } from '../utils/dataFetcher';
@@ -36,7 +37,6 @@ export function PublicPortal() {
     }, 800);
   };
 
-  return (
   return (
       <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-20 space-y-10 sm:space-y-16">
