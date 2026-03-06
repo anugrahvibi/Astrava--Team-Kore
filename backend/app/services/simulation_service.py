@@ -18,9 +18,37 @@ from app.schemas import (
 from app.services.prediction_service import PredictionService
 from app.services.cascade_service import CascadeService
 from app.services.actionability_service import ActionabilityService
+from app.services.ml_service_client import ml_client
 
 
 class SimulationService:
+    @staticmethod
+    async def run_ml_simulation() -> Optional[Dict[str, Any]]:
+        """Run simulation using AI_ML service."""
+        try:
+            return await ml_client.run_simulation()
+        except Exception as e:
+            print(f"ML simulation failed: {e}")
+            return None
+
+    @staticmethod
+    async def get_ml_scenarios() -> Optional[Dict[str, Any]]:
+        """Get scenarios from AI_ML service."""
+        try:
+            return await ml_client.get_scenarios()
+        except Exception as e:
+            print(f"ML scenarios failed: {e}")
+            return None
+
+    @staticmethod
+    async def get_ml_scenario_hourly_states(scenario_id: int) -> Optional[Dict[str, Any]]:
+        """Get hourly states for a scenario from AI_ML service."""
+        try:
+            return await ml_client.get_scenario_hourly_states(scenario_id)
+        except Exception as e:
+            print(f"ML scenario hourly states failed: {e}")
+            return None
+
     @staticmethod
     async def run_scenario(db: AsyncSession, scenario_name: str, zone_id: Optional[str] = None) -> List[SimulateResult]:
         """

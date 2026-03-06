@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import init_db, get_db
-from app.routers import zones, predictions, alerts, simulation, admin, sensors, cascade
+from app.routers import zones, predictions, alerts, simulation, admin, sensors, cascade, ml_integration
 from app.services.websocket_manager import manager
 
 
@@ -59,6 +59,7 @@ app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(sensors.router, prefix="/api/v1")
 app.include_router(simulation.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
+app.include_router(ml_integration.router, prefix="/api/v1")
 
 
 # ─── Health check ────────────────────────────────────────────────────────────

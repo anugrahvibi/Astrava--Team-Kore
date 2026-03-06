@@ -12,9 +12,20 @@ import httpx
 from app.config import get_settings
 from app.models import Prediction, SensorReading, Zone
 from app.schemas import PredictionOut, SensorSignals
+from app.services.ml_service_client import ml_client
 
 
 class PredictionService:
+    @staticmethod
+    async def get_ml_prediction(zone_id: str, scenario: str = 'current') -> Optional[Dict[str, Any]]:
+        """Get prediction from AI_ML LSTM service."""
+        try:
+            return await ml_client.predict_zone(zone_id, scenario)
+        except Exception as e:
+            # Log error but don't fail - fallback to internal logic
+            print(f"ML service prediction failed for {zone_id}: {e}")
+            return None
+
     @staticmethod
     async def get_latest_prediction(db: AsyncSession, zone_id: str) -> Optional[Prediction]:
         """Fetch the most recent ML prediction for a zone."""
@@ -72,21 +83,41 @@ class PredictionService:
         return prob, projected_water_level, lead_time, rainfall_signal, river_signal, reservoir_signal
 
     @staticmethod
-    async def generate_prediction(db: AsyncSession, zone_id: str, reading: SensorReading) -> Prediction:
-        """Create a new flood prediction for a zone."""
+    async def generate_prediction(db: AsyncSession, zone_id: str, reading: SensorReading, scenario: str = 'current') -> Prediction:
+        """Create a new flood prediction for a zone, using ML service when available."""
         settings = get_settings()
 
-        # Calculate probability and signals
-        prob, level, lead_time, rain_s, river_s, res_s = await PredictionService.calculate_probability(reading)
+        # Try to get prediction from ML service first
+        ml_result = await PredictionService.get_ml_prediction(zone_id, scenario)
         
-        # Two-signal confirmation logic for RED alert level (PRD Section 6.2)
-        alert_level = "GREEN"
-        two_signals = sum([rain_s, river_s, res_s]) >= 2
-        
-        if prob >= settings.red_threshold and (two_signals or reading.river_level_m > 7.0):
-            alert_level = "RED"
-        elif prob >= settings.amber_threshold or rain_s or river_s or res_s:
-            alert_level = "AMBER"
+        if ml_result and ml_result.get('status') == 'success':
+            # Use ML service prediction
+            pred_data = ml_result['prediction']
+            prob = pred_data['flood_probability']
+            level = pred_data['projected_water_level_m']
+            lead_time = pred_data['lead_time_hours']
+            alert_level = pred_data['alert_level']
+            confidence = pred_data.get('confidence_score', 0.92)
+            rain_s = pred_data.get('rainfall_signal', False)
+            river_s = pred_data.get('river_signal', False)
+            res_s = pred_data.get('reservoir_signal', False)
+            two_signals = pred_data.get('two_signal_confirmed', False)
+            model_version = "cascade_lstm_v1"
+        else:
+            # Fallback to internal calculation
+            prob, level, lead_time, rain_s, river_s, res_s = await PredictionService.calculate_probability(reading)
+            
+            # Two-signal confirmation logic for RED alert level (PRD Section 6.2)
+            alert_level = "GREEN"
+            two_signals = sum([rain_s, river_s, res_s]) >= 2
+            
+            if prob >= settings.red_threshold and (two_signals or reading.river_level_m > 7.0):
+                alert_level = "RED"
+            elif prob >= settings.amber_threshold or rain_s or river_s or res_s:
+                alert_level = "AMBER"
+            
+            confidence = 0.92
+            model_version = "cascade_v1"
 
         prediction = Prediction(
             zone_id=zone_id,
@@ -95,12 +126,12 @@ class PredictionService:
             projected_water_level_m=level,
             lead_time_hrs=lead_time,
             alert_level=alert_level,
-            confidence_score=0.92,  # example
+            confidence_score=confidence,
             rainfall_signal=rain_s,
             river_signal=river_s,
             reservoir_signal=res_s,
             two_signal_confirmed=two_signals,
-            model_version="cascade_v1"
+            model_version=model_version
         )
         
         db.add(prediction)
