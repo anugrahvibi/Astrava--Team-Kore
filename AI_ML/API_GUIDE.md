@@ -191,17 +191,26 @@ const res = await fetch(`${API}/predict/zone/ZONE_FORT_KOCHI?scenario=2018_peak`
 ---
 
 ## V. Actionability Layer (PRD Component 2 — 5-Stakeholders)
+> The actionability layer is a rules-based "Truth Table" engine. It never generates recommendations from ML — only from pre-loaded official documentation.
 
 ### 13. Trigger All-Stakeholder Action Plan
 ```js
-// POST /alerts/trigger?zone_id=ZONE_FORT_KOCHI
+// POST /alerts/trigger?zone_id=ZONE_FORT_KOCHI&reservoir_pct=88.5
 const res = await fetch(`${API}/alerts/trigger?zone_id=ZONE_FORT_KOCHI`, { method: 'POST' });
 const data = await res.json();
-// data.action_plan.action_plans['dam_operator'] -> List of CWC actions
-// data.action_plan.action_plans['ndrf'] -> List of NDMA actions
+// Each item in data.action_plan.action_plans:
+// {
+//   "department": "dam_controller",
+//   "alert_level": "RED",
+//   "action": "Open Gate 2 + Gate 4 at full discharge",
+//   "time_window_hours": 6.2,
+//   "source": "CWC Dam Safety Protocol Section 6.1",
+//   "reservoir_pct": 87,
+//   "priority": "IMMEDIATE"
+// }
 ```
 
-### 14. Action Summary (Dashboard view)
+### 14. Action Summary (Overview)
 ```js
 // GET /alerts/summary
 const res = await fetch(`${API}/alerts/summary`);

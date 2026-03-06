@@ -558,7 +558,7 @@ def predict_single_zone(zone_id: str, scenario: str = 'current'):
 
 
 @app.post('/alerts/trigger', tags=['Actionability Layer'])
-def trigger_alert(zone_id: str, scenario: str = 'current'):
+def trigger_alert(zone_id: str, scenario: str = 'current', reservoir_pct: float = None):
     lstm = _get_lstm()
     router = _get_router()
     valid_zones = ['ZONE_FORT_KOCHI','ZONE_VYTTILA','ZONE_ERNAKULAM','ZONE_KALAMASSERY','ZONE_ALUVA','ZONE_KAKKANAD']
@@ -577,6 +577,7 @@ def trigger_alert(zone_id: str, scenario: str = 'current'):
         flood_probability=pred['flood_probability'],
         lead_time_hours=pred['lead_time_hours'],
         projected_water_level_m=pred['projected_water_level_m'],
+        reservoir_pct=reservoir_pct
     )
     return {'status': 'success', 'prediction': pred, 'action_plan': action_plan}
 
