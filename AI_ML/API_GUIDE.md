@@ -172,12 +172,14 @@ const data = await res.json();
 
 ## IV. Flood Prediction (PRD Component 1 — LSTM)
 
-### 11. All Zones Prediction
+### 11. All Zones Prediction (with XAI)
 ```js
 // GET /predict/zones
 const res = await fetch(`${API}/predict/zones`);
 const data = await res.json();
-// data.predictions -> list of 6 zones with flood_probability & lead_time
+// data.predictions[0].flood_probability -> 0.0 to 1.0
+// data.predictions[0].feature_importance -> { local_river_level: 60, local_rainfall: 30, upstream_dam_release: 10 }
+// data.predictions[0].xai_summary -> String summary of the risk drivers.
 ```
 
 ### 12. Single Zone Prediction (supports Historical Mode)
@@ -210,6 +212,19 @@ const res = await fetch(`${API}/alerts/summary`);
 // GET /lead-time
 const res = await fetch(`${API}/lead-time`);
 // data.lead_time_tickers -> { hours_until_peak, stakeholder_action_windows }
+```
+
+---
+
+## VI. Strategic ROI & Budget Planning (Knapsack Optimization)
+
+### 16. Strategic Budget Allocator
+```js
+// POST /roi/allocate?budget_inr=5000000
+const res = await fetch(`${API}/roi/allocate?budget_inr=5000000`, { method: 'POST' });
+const data = await res.json();
+// data.budget_analysis -> { total_budget_inr, total_lives_saved, lives_saved_units: 'approximate_lives'
+//    recommended_hardening_plan: [{ node_id, lives_saved, cost_inr }, ...] }
 ```
 
 ---

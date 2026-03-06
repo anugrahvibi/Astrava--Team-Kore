@@ -188,8 +188,8 @@ class LSTMFloodPredictor:
         print("[LSTMPredictor] Fallback model calibrated (physics-informed weighted risk scoring).")
         return 0.87   # empirical accuracy for rules-based flood models (ref: IMD 2020)
 
-    def _compute_flood_probability(self, zone_id: str, conditions: dict) -> float:
-        """Compute flood probability for a zone given current conditions."""
+    def _compute_flood_probability(self, zone_id: str, conditions: dict) -> tuple[float, dict]:
+        """Compute flood probability for a zone given current conditions and return feature importance."""
         thresholds = ZONE_FLOOD_THRESHOLDS[zone_id]
         river = conditions["river_level_m"]
 
@@ -204,20 +204,34 @@ class LSTMFloodPredictor:
             ]], dtype=np.float32)
             feat_seq = np.tile(feat, (self.SEQUENCE_LENGTH, 1))[np.newaxis, :]
             prob = float(self._model.predict(feat_seq, verbose=0)[0][0])
+            
+            # Approximate XAI for LSTM based on input magnitude & fallback weights
+            r_imp = river * 0.50
+            rain_imp = conditions["rainfall_mmhr"] * 0.35
+            outflow_imp = conditions["reservoir_outflow_cumecs"] * 0.15
         else:
             # Physics-informed fallback
             r_norm = min(river / thresholds["red"], 1.0)
             rain_norm = min(conditions["rainfall_mmhr"] / 5.0, 1.0)
             outflow_norm = min(conditions["reservoir_outflow_cumecs"] / 3500.0, 1.0)
             w = self._fallback_weights
-            prob = (
-                w["river_level_m"] * r_norm +
-                w["rainfall_mmhr"] * rain_norm +
-                w["reservoir_outflow_cumecs"] * outflow_norm
-            )
+            
+            r_imp = w["river_level_m"] * r_norm
+            rain_imp = w["rainfall_mmhr"] * rain_norm
+            outflow_imp = w["reservoir_outflow_cumecs"] * outflow_norm
+            
+            prob = (r_imp + rain_imp + outflow_imp)
             prob = min(prob * thresholds["base_risk"] * 1.8, 1.0)
 
-        return round(float(prob), 4)
+        # Normalize feature importance to percentages
+        total_imp = max(r_imp + rain_imp + outflow_imp, 0.001)
+        feature_importance = {
+            "local_river_level": round((r_imp / total_imp) * 100),
+            "local_rainfall": round((rain_imp / total_imp) * 100),
+            "upstream_dam_release": round((outflow_imp / total_imp) * 100),
+        }
+
+        return round(float(prob), 4), feature_importance
 
     def _compute_lead_time(self, zone_id: str, probability: float) -> int:
         """
@@ -247,7 +261,7 @@ class LSTMFloodPredictor:
         })
 
         thresholds = ZONE_FLOOD_THRESHOLDS[zone_id]
-        prob = self._compute_flood_probability(zone_id, conditions)
+        prob, feature_importance = self._compute_flood_probability(zone_id, conditions)
         river = conditions["river_level_m"]
 
         if river >= thresholds["red"] or prob >= 0.70:
@@ -266,6 +280,8 @@ class LSTMFloodPredictor:
             "projected_water_level_m": round(river, 2),
             "alert_level": alert_level,
             "lead_time_hours": lead_time,
+            "feature_importance": feature_importance,
+            "xai_summary": f"Alert driven {feature_importance['upstream_dam_release']}% by upstream dam release, {feature_importance['local_rainfall']}% by local rainfall, and {feature_importance['local_river_level']}% by local river level.",
             "data_sources": ["NASA GPM IMERG (synthetic)", "India WRIS (synthetic)", "CWC Reservoir Feed (synthetic)"],
             "current_conditions": {
                 "rainfall_mmhr": round(conditions["rainfall_mmhr"], 2),

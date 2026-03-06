@@ -260,6 +260,52 @@ def rank_roi():
     }
 
 
+@app.post("/roi/allocate", tags=["What-If Analysis"])
+def allocate_budget(budget_inr: float = 5_000_000):
+    """
+    Kochi Strategic Budget Allocator.
+    Uses the 0/1 Knapsack Algorithm to select the optimal combination of 
+    infrastructure nodes to harden to maximize total lives saved.
+    
+    Args:
+        budget_inr: Total available budget in INR. Default 50 Lakhs (5M).
+    """
+    dg, gen, scenarios, baseline_results = _get_pipeline()
+    roi_calc = ROICalculator()
+    COST_PER_NODE = 1_000_000  # Default assumed cost per node
+    
+    # 1. First, calculate ROI for all candidates individually
+    candidates = []
+    for node_id in dg.graph.nodes:
+        # Only consider Substations and Hospitals for hardening in this demo
+        if dg.graph.nodes[node_id]["type"] not in ["substation", "hospital"]:
+            continue
+            
+        original_thresh = _original_thresholds.get(node_id)
+        dg.harden_node(node_id)
+        
+        propagator = CascadePropagator(dg.graph, gen)
+        hardened_results = propagator.run_all_scenarios(scenarios, use_multiprocessing=False)
+        roi = roi_calc.calculate_roi(dg.graph, baseline_results, hardened_results, COST_PER_NODE, node_id)
+        
+        candidates.append({
+            "node_id": node_id,
+            "cost_inr": COST_PER_NODE,
+            "lives_saved": roi["approximate_lives_saved"]
+        })
+        
+        dg.soften_node(node_id, original_thresh)
+
+    # 2. Run Knapsack Optimization
+    optimization_result = roi_calc.allocate_budget(candidates, budget_inr)
+    
+    return {
+        "status": "success",
+        "budget_analysis": optimization_result,
+        "message": f"Optimal plan generated for ₹{budget_inr:,.0f} budget."
+    }
+
+
 # ─── 3D Map Endpoints ─────────────────────────────────────────────────────────
 
 @app.get("/flood-grid/{hour}", tags=["3D Map"])

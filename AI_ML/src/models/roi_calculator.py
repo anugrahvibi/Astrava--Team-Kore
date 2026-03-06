@@ -134,6 +134,67 @@ class ROICalculator:
         rankings.sort(key=lambda x: x["lives_saved_per_rupee"] if x["lives_saved_per_rupee"] != float("inf") else 1e18, reverse=True)
         return rankings
 
+    def allocate_budget(self, candidate_nodes: list[dict], total_budget: float) -> dict:
+        """
+        Uses the 0/1 Knapsack dynamic programming algorithm to find the optimal 
+        combination of nodes to harden given a fixed total budget.
+        
+        Args:
+            candidate_nodes: List of dicts, each with 'node_id', 'cost_inr', 'lives_saved'.
+            total_budget: Max INR budget available.
+            
+        Returns:
+            Dict containing the selected nodes, total cost, and total lives saved.
+        """
+        # Knapsack requires integer weights (costs). We will normalize costs to units of 100,000 INR
+        # to keep the DP table size manageable while retaining granularity.
+        SCALE_FACTOR = 100_000
+        budget_units = int(total_budget // SCALE_FACTOR)
+        
+        # Filter candidates that are valid and have > 0 lives saved
+        items = []
+        for c in candidate_nodes:
+            # Round cost up to nearest scale unit to be safe with budget
+            cost_u = int((c.get("cost_inr", 1_000_000) + SCALE_FACTOR - 1) // SCALE_FACTOR)
+            val = int(c.get("lives_saved", 0))
+            if cost_u > 0 and val > 0:
+                items.append((c["node_id"], cost_u, val, c.get("cost_inr", cost_u*SCALE_FACTOR)))
+
+        n = len(items)
+        dp = [[0 for _ in range(budget_units + 1)] for _ in range(n + 1)]
+
+        for i in range(1, n + 1):
+            node_id, cost_u, val, raw_cost = items[i - 1]
+            for w in range(1, budget_units + 1):
+                if cost_u <= w:
+                    dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - cost_u] + val)
+                else:
+                    dp[i][w] = dp[i - 1][w]
+
+        # Backtrack to find the selected items
+        selected_nodes = []
+        total_lives = dp[n][budget_units]
+        w = budget_units
+        total_cost_spent = 0
+        
+        for i in range(n, 0, -1):
+            if dp[i][w] != dp[i - 1][w]:
+                node_id, cost_u, val, raw_cost = items[i - 1]
+                selected_nodes.append({
+                    "node_id": node_id,
+                    "lives_saved": val,
+                    "cost_inr": raw_cost
+                })
+                w -= cost_u
+                total_cost_spent += raw_cost
+
+        return {
+            "total_budget_inr": total_budget,
+            "total_cost_allocated_inr": total_cost_spent,
+            "total_lives_saved": total_lives,
+            "budget_utilization_pct": round((total_cost_spent / total_budget) * 100, 2) if total_budget > 0 else 0,
+            "recommended_hardening_plan": selected_nodes
+        }
 
 def _roi_recommendation(roi_ratio: float) -> str:
     if roi_ratio == float("inf"):
