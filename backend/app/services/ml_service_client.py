@@ -173,11 +173,14 @@ class MLServiceClient:
             raise
     
     # Flood prediction endpoints
-    async def predict_all_zones(self) -> Dict[str, Any]:
-        """Get flood predictions for all zones."""
+    async def predict_all_zones(self, scenario: str = "current") -> Dict[str, Any]:
+        """Get flood predictions for all zones, optionally for a specific scenario."""
         try:
             async with httpx.AsyncClient(timeout=self.timeout_fast) as client:
-                response = await client.get(f"{self.base_url}/predict/zones")
+                response = await client.get(
+                    f"{self.base_url}/predict/zones",
+                    params={"scenario": scenario},
+                )
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
