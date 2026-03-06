@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, Droplets, Target, CheckCircle2, Waves, Settings, AlertTriangle, Zap, Wind, Shield, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Activity, Droplets, Target, CheckCircle2, Waves, Settings, AlertTriangle, Zap, Wind, Shield, ArrowRight, MapPin } from 'lucide-react';
 import { fetchActiveAlerts, fetchSensorReadings, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, SensorReading, Prediction } from '../utils/dataFetcher';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
-import { useRef } from 'react';
 
 export function DamOperatorDashboard() {
   const containerRef = useRef<HTMLDivElement>(null);

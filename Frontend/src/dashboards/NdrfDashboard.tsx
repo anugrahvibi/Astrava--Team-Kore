@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapView } from '../components/MapView';
 import { ZonePanel } from '../components/ZonePanel';
 import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchLeadTimes, fetchVulnerabilities } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, LeadTimeTicker, VulnerabilityData } from '../utils/dataFetcher';
 import { AlertTriangle, MapPin, ShieldAlert, Navigation, Activity, CheckCircle2, Zap, Shield, Radio, Clock, Target, Info, ShieldCheck } from 'lucide-react';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
-import { useRef } from 'react';
 
 export function NdrfDashboard() {
   const containerRef = useRef<HTMLDivElement>(null);

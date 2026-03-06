@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, MapPin, AlertTriangle, Hammer, CheckCircle2, Truck, ArrowRightLeft, ShieldCheck, TrendingDown, Radio, Navigation, Clock, RoadIcon, ArrowRight, Shield } from 'lucide-react';
+import { Activity, MapPin, AlertTriangle, Hammer, CheckCircle2, Truck, ArrowRightLeft, ShieldCheck, TrendingDown, Radio, Navigation, Clock, Route, ArrowRight, Shield } from 'lucide-react';
 import { fetchActiveAlerts, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, Prediction } from '../utils/dataFetcher';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
@@ -7,7 +7,7 @@ import { useGsapAnimations } from '../utils/useGsapAnimations';
 export function HighwayDepartmentDashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useGsapAnimations(containerRef);
 
@@ -26,7 +26,8 @@ export function HighwayDepartmentDashboard() {
   const criticalRoads = alerts.length;
   const avgLeadTime = predictions.length > 0 
     ? (predictions.reduce((acc, p) => acc + p.lead_time_hours, 0) / predictions.length).toFixed(1)
-    : '8.0'; // Restored the missing part of the ternary operator to ensure valid syntax
+    : '8.0';
+
   return (
     <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
@@ -38,7 +39,7 @@ export function HighwayDepartmentDashboard() {
                 <Truck size={28} className="text-white" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
-                Logistics <span className="text-blue-600">Command</span> <RoadIcon size={28} className="text-blue-600 inline-block ml-2" />
+                Logistics <span className="text-blue-600">Command</span> <Route size={28} className="text-blue-600 inline-block ml-2" />
               </h1>
             </div>
             <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] pl-1 flex items-center gap-2">
@@ -73,23 +74,23 @@ export function HighwayDepartmentDashboard() {
              </div>
              <div className="overflow-y-auto flex-1 p-5 sm:p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
-                  alerts.map((alert) => (
-                    <div key={alert.id} className="p-5 sm:p-6 glass-blue rounded-3xl relative group transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                           <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-200">
-                              {alert.zone_id.replace('ZONE_', '')}
-                           </div>
-                           <AlertTriangle size={14} className="text-amber-500 opacity-50" />
-                        </div>
-                        <p className="text-gray-900 font-bold text-sm leading-relaxed mb-1">{alert.action_text}</p>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Source: AI-ML Structural Router</div>
-                      </div>
-                       <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm self-end sm:self-auto">
-                         <MapPin size={24} />
-                      </div>
-                    </div>
-                  ))
+                   alerts.map((alert) => (
+                     <div key={alert.id} className="p-5 sm:p-6 glass-blue rounded-3xl relative group transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm">
+                       <div className="flex-1">
+                         <div className="flex items-center gap-3 mb-2">
+                            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-200">
+                               {alert.zone_id.replace('ZONE_', '')}
+                            </div>
+                            <AlertTriangle size={14} className="text-amber-500 opacity-50" />
+                         </div>
+                         <p className="text-gray-900 font-bold text-sm leading-relaxed mb-1">{alert.action_text}</p>
+                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Source: AI-ML Structural Router</div>
+                       </div>
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm self-end sm:self-auto">
+                          <MapPin size={24} />
+                       </div>
+                     </div>
+                   ))
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-40 gap-6">
                     <CheckCircle2 size={64} strokeWidth={1} />
@@ -122,10 +123,10 @@ export function HighwayDepartmentDashboard() {
                     'Coordinate arterial diversions',
                     'Strategic asset retrieval'
                   ].map((task, i) => (
-                      <div key={i} className="flex items-center gap-3 sm:gap-4 p-4 glass-blue rounded-3xl text-[10px] sm:text-[11px] font-bold text-gray-700 group transition-all cursor-default shadow-sm-blue">
-                       <CheckCircle2 size={16} className="text-emerald-500" />
-                        <span className="uppercase tracking-wide leading-tight">{task}</span>
-                    </div>
+                       <div key={i} className="flex items-center gap-3 sm:gap-4 p-4 glass-blue rounded-3xl text-[10px] sm:text-[11px] font-bold text-gray-700 group transition-all cursor-default shadow-sm-blue">
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                         <span className="uppercase tracking-wide leading-tight">{task}</span>
+                     </div>
                   ))}
                </div>
             </section>

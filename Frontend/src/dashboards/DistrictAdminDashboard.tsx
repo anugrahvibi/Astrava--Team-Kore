@@ -3,7 +3,6 @@ import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, f
 import type { Prediction, InfrastructureNode, Alert, ROIRanking } from '../utils/dataFetcher';
 import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info, Clock } from 'lucide-react';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
-import { useRef } from 'react';
 
 export function DistrictAdminDashboard() {
   const containerRef = useRef<HTMLDivElement>(null);

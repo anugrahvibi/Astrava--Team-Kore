@@ -3,7 +3,6 @@ import { Search, MapPin, AlertTriangle, Shield, CheckCircle2, Navigation, Activi
 import { fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
 import type { Prediction, Alert } from '../utils/dataFetcher';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
-import { useRef } from 'react';
 
 export function PublicPortal() {
   const containerRef = useRef<HTMLDivElement>(null);
