@@ -1,23 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { MapView } from '../components/MapView';
 import { ZonePanel } from '../components/ZonePanel';
-import { fetchZones, fetchInfrastructure, generateMockPredictions } from '../utils/dataFetcher';
-import type { Prediction, InfrastructureNode } from '../utils/dataFetcher';
-import { AlertTriangle, MapPin } from 'lucide-react';
+import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
+import type { Prediction, InfrastructureNode, Alert } from '../utils/dataFetcher';
+import { AlertTriangle, MapPin, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 export function NdrfDashboard() {
   const [zones, setZones] = useState<any>(null);
   const [infra, setInfra] = useState<InfrastructureNode[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
   useEffect(() => {
     async function init() {
       const zData = await fetchZones();
       const iData = await fetchInfrastructure();
+      const pData = await fetchPredictions();
+      const aData = await fetchActiveAlerts('ndrf');
       setZones(zData);
       setInfra(iData.nodes);
-      setPredictions(generateMockPredictions(zData.features || []));
+      setPredictions(pData.length > 0 ? pData : []);
+      setAlerts(aData);
     }
     init();
   }, []);
@@ -59,6 +63,22 @@ export function NdrfDashboard() {
               </div>
             ))}
           </div>
+
+          {alerts.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <ShieldAlert size={14} className="text-blue-700" /> Active Directives
+              </h3>
+              <div className="space-y-3">
+                {alerts.map(alert => (
+                  <div key={alert.id} className="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div className="text-[10px] font-bold text-blue-700 uppercase mb-1">HQ DIRECTIVE</div>
+                    <div className="text-xs text-blue-900 font-medium">{alert.action_text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

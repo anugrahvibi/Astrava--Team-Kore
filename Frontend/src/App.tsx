@@ -1,14 +1,17 @@
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { NdrfDashboard } from './dashboards/NdrfDashboard';
 import { DamOperatorDashboard } from './dashboards/DamOperatorDashboard';
 import { DistrictAdminDashboard } from './dashboards/DistrictAdminDashboard';
 import { PublicPortal } from './dashboards/PublicPortal';
 import { Login } from './components/Login';
 import { Signup } from './components/Signup';
-import { LayoutDashboard, RadioTower, ShieldAlert, Users, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { AuthProvider, useAuth } from './AuthContext';
+import type { Role } from './AuthContext';
 
 function Navigation() {
   const location = useLocation();
+  const { role, logout } = useAuth();
   const isAuthPage = location.pathname === '/' || location.pathname === '/signup';
 
   if (isAuthPage) return null;
@@ -18,46 +21,61 @@ function Navigation() {
       <div className="flex items-center gap-4">
         <h1 className="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
           <span>CascadeNet</span>
-          <span className="text-xs px-2 py-0.5 rounded-xl bg-gray-100 text-gray-600 font-sans">v2.0</span>
         </h1>
       </div>
-      <div className="flex gap-1 text-sm font-medium">
-        <Link to="/ndrf" className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-xl">
-          <ShieldAlert size={16} /> NDRF Command
-        </Link>
-        <Link to="/dam" className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-xl">
-          <RadioTower size={16} /> Dam Operator
-        </Link>
-        <Link to="/admin" className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-xl">
-          <LayoutDashboard size={16} /> District Admin
-        </Link>
-        <Link to="/public" className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-xl">
-          <Users size={16} /> Public Portal
-        </Link>
-        <Link to="/" className="flex items-center gap-2 border-l border-gray-200 ml-2 pl-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors rounded-xl">
+      <div className="flex gap-1 text-sm font-medium items-center">
+        <span className="text-gray-500 mr-4 font-semibold uppercase tracking-wider text-[10px] bg-gray-100 px-3 py-1 rounded-full">{role}</span>
+        <button onClick={logout} className="flex items-center gap-2 border-l border-gray-200 ml-2 pl-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors rounded-xl">
           <LogOut size={16} /> Logout
-        </Link>
+        </button>
       </div>
     </nav>
+  );
+}
+
+import React from 'react';
+
+function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, allowedRole: Role }) {
+  const { role } = useAuth();
+  if (role !== allowedRole) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
+function AuthRedirect({ children }: { children: React.ReactNode }) {
+  const { role } = useAuth();
+  if (role === 'NDRF Command') return <Navigate to="/ndrf" replace />;
+  if (role === 'Dam Operator') return <Navigate to="/dam" replace />;
+  if (role === 'District Admin') return <Navigate to="/admin" replace />;
+  if (role === 'Public') return <Navigate to="/public" replace />;
+  return <>{children}</>;
+}
+
+function AppContent() {
+  return (
+    <div className="h-screen w-screen bg-gray-50 text-gray-900 flex flex-col overflow-hidden" style={{ fontFamily: 'Verdana, sans-serif' }}>
+      <Navigation />
+      <main className="flex-1 mt-0 relative flex flex-col">
+        <Routes>
+          <Route path="/" element={<AuthRedirect><Login /></AuthRedirect>} />
+          <Route path="/signup" element={<AuthRedirect><Signup /></AuthRedirect>} />
+          <Route path="/ndrf" element={<ProtectedRoute allowedRole="NDRF Command"><div className="flex-1 mt-16"><NdrfDashboard /></div></ProtectedRoute>} />
+          <Route path="/dam" element={<ProtectedRoute allowedRole="Dam Operator"><div className="flex-1 mt-16"><DamOperatorDashboard /></div></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute allowedRole="District Admin"><div className="flex-1 mt-16"><DistrictAdminDashboard /></div></ProtectedRoute>} />
+          <Route path="/public" element={<ProtectedRoute allowedRole="Public"><div className="flex-1 mt-16"><PublicPortal /></div></ProtectedRoute>} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="h-screen w-screen bg-gray-50 text-gray-900 flex flex-col overflow-hidden" style={{ fontFamily: 'Verdana, sans-serif' }}>
-        <Navigation />
-        <main className="flex-1 mt-0 relative flex flex-col">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/ndrf" element={<div className="flex-1 mt-16"><NdrfDashboard /></div>} />
-            <Route path="/dam" element={<div className="flex-1 mt-16"><DamOperatorDashboard /></div>} />
-            <Route path="/admin" element={<div className="flex-1 mt-16"><DistrictAdminDashboard /></div>} />
-            <Route path="/public" element={<div className="flex-1 mt-16"><PublicPortal /></div>} />
-          </Routes>
-        </main>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

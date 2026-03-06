@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { LeadTimeCounter } from '../components/LeadTimeCounter';
-import { Activity, Droplets, Target } from 'lucide-react';
+import { Activity, Droplets, Target, CheckCircle2 } from 'lucide-react';
+import { fetchActiveAlerts, fetchSensorReadings, fetchPredictions } from '../utils/dataFetcher';
+import type { Alert, SensorReading, Prediction } from '../utils/dataFetcher';
 
 const mockData = Array.from({ length: 24 }).map((_, i) => ({
   time: `${String(i).padStart(2, '0')}:00`,
@@ -10,7 +12,27 @@ const mockData = Array.from({ length: 24 }).map((_, i) => ({
 }));
 
 export function DamOperatorDashboard() {
-  const reservoirPercentage = 88.5;
+  const [sensor, setSensor] = useState<SensorReading | null>(null);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
+
+  useEffect(() => {
+    async function init() {
+      const sData = await fetchSensorReadings('zone_a_godavari_upper');
+      const aData = await fetchActiveAlerts('dam_operator');
+      const pData = await fetchPredictions();
+      
+      if (sData.length > 0) setSensor(sData[0]);
+      setAlerts(aData);
+      setPrediction(pData.find(p => p.zone_id === 'zone_a_godavari_upper') || null);
+    }
+    init();
+    const interval = setInterval(init, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const reservoirPercentage = sensor?.reservoir_pct || 88.5;
+  const systemStatus = prediction?.alert_level === 'RED' ? 'CRITICAL' : prediction?.alert_level === 'AMBER' ? 'WARNING' : 'NORMAL';
 
   return (
     <div className="p-8 h-full bg-gray-50 overflow-y-auto">
@@ -22,8 +44,12 @@ export function DamOperatorDashboard() {
             Idukki Dam Operations
           </h1>
           <div className="flex gap-4">
-            <div className="bg-white shadow-sm border border-gray-200 px-4 py-2 rounded-xl text-sm text-gray-600 font-sans font-semibold text-gray-700 flex items-center gap-2">
-              <Activity size={16} /> SYSTEM NORMAL
+            <div className={`shadow-sm border px-4 py-2 rounded-xl text-sm font-sans font-semibold flex items-center gap-2 ${
+              systemStatus === 'CRITICAL' ? 'bg-red-50 border-red-200 text-red-700' :
+              systemStatus === 'WARNING' ? 'bg-amber-50 border-amber-200 text-amber-600' :
+              'bg-emerald-50 border-emerald-200 text-emerald-700'
+            }`}>
+              <Activity size={16} /> SYSTEM {systemStatus}
             </div>
           </div>
         </div>
@@ -49,18 +75,23 @@ export function DamOperatorDashboard() {
           </div>
 
           <div className="col-span-1 flex flex-col gap-6">
-            <LeadTimeCounter hours={8} />
+            <LeadTimeCounter hours={prediction?.lead_time_hours || 8} />
             <div className="border border-gray-200 bg-white shadow-sm p-6 rounded-2xl flex-1">
-              <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4">Gate Status</h3>
+              <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4">Urgent Directives</h3>
               <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((gate) => (
-                  <div key={gate} className="flex justify-between items-center bg-gray-50 p-2 rounded-xl border border-gray-200/50">
-                    <div className="text-sm font-sans font-semibold text-gray-700 text-gray-700">Gate {gate}</div>
-                    <div className={`text-xs font-bold px-2 py-1 rounded-xl uppercase ${gate <= 2 ? 'bg-amber-500/20 text-amber-500' : 'bg-gray-100 text-gray-500'}`}>
-                      {gate <= 2 ? 'OPEN 0.5m' : 'CLOSED'}
+                {alerts.length > 0 ? (
+                  alerts.map((alert) => (
+                    <div key={alert.id} className="p-3 bg-red-50 border border-red-100 rounded-xl">
+                      <div className="text-xs font-bold text-red-700 uppercase mb-1">ACTION REQUIRED</div>
+                      <div className="text-sm text-red-900 font-medium">{alert.action_text}</div>
                     </div>
+                  ))
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-8">
+                    <CheckCircle2 size={24} className="mb-2" />
+                    <p className="text-xs">No pending directives</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -83,8 +114,10 @@ export function DamOperatorDashboard() {
                 <div className="text-gray-500 text-xs mt-1">Initial warnings</div>
               </div>
               <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="text-xs text-gray-500 mb-1 tracking-wider">CURRENT ELEVATION</div>
-                <div className="text-xl font-bold text-gray-800">2396.4 ft</div>
+                <div className="text-xs text-gray-500 mb-1 tracking-wider">CURRENT ELEVATION (FT)</div>
+                <div className="text-xl font-bold text-gray-800">
+                  {sensor?.river_level_m ? (sensor.river_level_m * 3.28084 + 2300).toFixed(1) : '2396.4'}
+                </div>
               </div>
             </div>
           </div>
@@ -101,8 +134,8 @@ export function DamOperatorDashboard() {
                 contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a' }}
                 itemStyle={{ fontSize: 12, fontFamily: 'monospace' }} 
               />
-              <Line type="monotone" dataKey="inflow" stroke="#3b82f6" strokeWidth={2} dot={false} />
-              <Line type="stepAfter" dataKey="outflow" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="inflow" stroke="#3b82f6" strokeWidth={2} dot={false} name="Inflow (m³/s)" />
+                <Line type="stepAfter" dataKey="outflow" stroke="#f59e0b" strokeWidth={2} dot={false} name="Outflow (m³/s)" />
             </LineChart>
           </ResponsiveContainer>
         </div>

@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
+import { useAuth } from '../AuthContext';
+import type { Role } from '../AuthContext';
 
 export function Signup() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Public');
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy navigation depending on role
-    if (role === 'NDRF Command') navigate('/ndrf');
-    else if (role === 'Dam Operator') navigate('/dam');
-    else if (role === 'District Admin') navigate('/admin');
-    else navigate('/public');
+    localStorage.removeItem('registered_role');
+    if (login(role as Role)) {
+      if (role === 'NDRF Command') navigate('/ndrf');
+      else if (role === 'Dam Operator') navigate('/dam');
+      else if (role === 'District Admin') navigate('/admin');
+      else navigate('/public');
+    }
   };
 
   const roles = ['NDRF Command', 'Dam Operator', 'District Admin', 'Public'];
@@ -51,6 +56,7 @@ export function Signup() {
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">Select the role you are applying for.</p>
               </div>
             </div>
 

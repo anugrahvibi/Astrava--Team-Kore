@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
+import { useAuth } from '../AuthContext';
+import type { Role } from '../AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy login: redirect to NDRF command for now
-    navigate('/ndrf');
+    if (login()) {
+      // In a real app, role would come back from the server.
+      // Here, useAuth will have updated the 'role' state based on the local storage check.
+      const userRole = localStorage.getItem('cascade_role');
+      if (userRole === 'NDRF Command') navigate('/ndrf');
+      else if (userRole === 'Dam Operator') navigate('/dam');
+      else if (userRole === 'District Admin') navigate('/admin');
+      else navigate('/public');
+    }
   };
 
   return (
@@ -21,10 +30,7 @@ export function Login() {
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to CascadeNet</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-            register for a new account
-          </Link>
+          Sign in with your registered credentials.
         </p>
       </div>
 
@@ -58,16 +64,20 @@ export function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input id="remember-me" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                <label className="ml-2 block text-sm text-gray-900">Remember me</label>
+              <div className="flex items-center text-sm">
+                <p className="text-gray-500 italic">Credentials will be validated against your registered role.</p>
+              </div>
+              <div className="text-sm">
+                <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                  Switch Role?
+                </Link>
               </div>
             </div>
 
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 Sign in
               </button>

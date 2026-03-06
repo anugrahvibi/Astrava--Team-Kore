@@ -1,27 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { fetchZones, fetchInfrastructure, generateMockPredictions } from '../utils/dataFetcher';
-import type { Prediction, InfrastructureNode } from '../utils/dataFetcher';
-import { Users, FileText, CheckCircle2 } from 'lucide-react';
+import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
+import type { Prediction, InfrastructureNode, Alert } from '../utils/dataFetcher';
+import { Users, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function DistrictAdminDashboard() {
-  const [zones, setZones] = useState<any>(null);
+  const [zones, setZones] = useState<any[]>([]);
   const [infra, setInfra] = useState<InfrastructureNode[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
   useEffect(() => {
     async function init() {
       const zData = await fetchZones();
       const iData = await fetchInfrastructure();
-      setZones(zData);
+      const pData = await fetchPredictions();
+      const aData = await fetchActiveAlerts('collector');
+      
+      setZones(Array.isArray(zData) ? zData : []);
       setInfra(iData.nodes);
-      setPredictions(generateMockPredictions(zData.features || []));
+      setPredictions(pData.length > 0 ? pData : []);
+      setAlerts(aData);
     }
     init();
   }, []);
 
-  const totalExposed = predictions
-    .filter(p => ['RED', 'AMBER'].includes(p.alert_level))
-    .reduce((acc, curr) => acc + (Math.random() * 50000 + 10000), 0);
+  const totalExposed = zones.reduce((acc, zone) => {
+    const pred = predictions.find(p => p.zone_id === zone.id);
+    if (pred && ['RED', 'AMBER'].includes(pred.alert_level)) {
+      return acc + (zone.population || 0);
+    }
+    return acc;
+  }, 0);
 
   return (
     <div className="p-8 h-full bg-gray-50 overflow-y-auto w-full">
@@ -89,26 +98,40 @@ export function DistrictAdminDashboard() {
                 </h2>
              </div>
              <div className="overflow-y-auto flex-1 p-6 space-y-6">
-                {[
-                  { dept: 'HIGHWAYS', action: 'Close NH-66 Edapally Exit', time: '1H', status: 'PENDING', color: 'text-amber-500', border: 'border-amber-500/50' },
-                  { dept: 'KSEB (POWER)', action: 'Isolate Kalamassery Substation', time: 'ACTIVE', status: 'IN PROGRESS', color: 'text-blue-700', border: 'border-blue-500/50' },
-                  { dept: 'POLICE', action: 'Initiate Aluva Evacuation Protocol', time: '4H', status: 'PENDING', color: 'text-red-700', border: 'border-red-500/50' },
-                  { dept: 'HEALTH', action: 'Evacuate General Hospital Ground Floor', time: 'DONE', status: 'COMPLETED', color: 'text-emerald-700', border: 'border-emerald-500/50' }
-                ].map((act, i) => (
-                  <div key={i} className={`p-4 border rounded-xl bg-gray-50 flex justify-between items-center ${act.border}`}>
-                     <div>
-                       <div className={`text-[10px] uppercase font-bold tracking-wide mb-1 ${act.color}`}>
-                         {act.dept} • {act.status}
+                {alerts.length > 0 ? (
+                  alerts.map((alert) => (
+                    <div key={alert.id} className={`p-4 border rounded-xl bg-gray-50 flex justify-between items-center ${
+                      alert.alert_level === 'RED' ? 'border-red-500/50' : 
+                      alert.alert_level === 'AMBER' ? 'border-amber-500/50' : 'border-blue-500/50'
+                    }`}>
+                       <div className="flex-1">
+                         <div className={`text-[10px] uppercase font-bold tracking-wide mb-1 ${
+                           alert.alert_level === 'RED' ? 'text-red-700' : 
+                           alert.alert_level === 'AMBER' ? 'text-amber-500' : 'text-blue-700'
+                         }`}>
+                           {alert.zone_id.split('_').pop()?.toUpperCase()} • {alert.alert_level}
+                         </div>
+                         <div className="text-gray-800 font-medium text-sm">
+                           {alert.action_text}
+                         </div>
                        </div>
-                       <div className="text-gray-800 font-medium text-sm">
-                         {act.action}
+                       <div className="font-sans font-semibold text-gray-700 font-bold ml-4">
+                          {alert.acknowledged ? (
+                            <CheckCircle2 className="text-emerald-700" size={20} />
+                          ) : (
+                            <div className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full whitespace-nowrap">
+                              PENDING
+                            </div>
+                          )}
                        </div>
-                     </div>
-                     <div className="font-sans font-semibold text-gray-700 font-bold text-2xl text-gray-600">
-                        {act.status === 'COMPLETED' ? <CheckCircle2 className="text-emerald-700" /> : `T-${act.time}`}
-                     </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                    <CheckCircle2 size={32} />
+                    <p className="text-sm">No active department actions</p>
                   </div>
-                ))}
+                )}
              </div>
           </div>
 

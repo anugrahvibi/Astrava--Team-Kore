@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Navigation, PhoneCall, AlertCircle } from 'lucide-react';
+import { ShieldAlert, Navigation, PhoneCall, AlertCircle, CheckCircle } from 'lucide-react';
+import { fetchPredictions } from '../utils/dataFetcher';
+import type { Prediction } from '../utils/dataFetcher';
 
 export function PublicPortal() {
   const [pin, setPin] = useState('');
   const [searched, setSearched] = useState(false);
+  const [isHighRisk, setIsHighRisk] = useState(false);
+  const [matchingZone, setMatchingZone] = useState<Prediction | null>(null);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin.length > 3) setSearched(true);
+    if (pin.length < 3) return;
+    
+    const predictions = await fetchPredictions();
+    // Simple mock logic: if pin matches first part of zone name or something
+    // For demo, let's just find first RED or AMBER zone
+    const criticalZone = predictions.find(p => p.alert_level !== 'GREEN');
+    
+    if (criticalZone) {
+      setIsHighRisk(true);
+      setMatchingZone(criticalZone);
+    } else {
+      setIsHighRisk(false);
+      setMatchingZone(null);
+    }
+    setSearched(true);
   };
 
-  const isHighRisk = pin.startsWith('682'); // simple mock logic for dummy pins
-
   return (
-    <div className="h-full bg-black text-gray-900 flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto w-full">
+    <div className="h-full bg-gray-50 text-gray-900 flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto w-full">
       <div className="w-full max-w-lg mx-auto space-y-6">
         
         <div className="text-center space-y-2 mb-10">
@@ -48,8 +64,8 @@ export function PublicPortal() {
               <>
                 <div className="bg-red-600 border border-red-500 text-white p-8 rounded-2xl text-center shadow-[0_0_40px_rgba(220,38,38,0.3)]">
                   <AlertCircle size={48} className="mx-auto mb-4" />
-                  <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight mb-2">YOUR AREA IS AT HIGH RISK</h2>
-                  <p className="text-red-100 font-medium">IMMEDIATE EVACUATION REQUIRED</p>
+                  <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight mb-2">RISK DETECTED in {matchingZone?.zone_name}</h2>
+                  <p className="text-red-100 font-medium">POTENTIAL FLOODING DETECTED ({(matchingZone?.flood_probability || 0 * 100).toFixed(0)}%)</p>
                 </div>
                 
                 <div className="bg-white shadow-sm border border-gray-200 rounded-2xl p-6 space-y-4">
@@ -69,8 +85,8 @@ export function PublicPortal() {
                 </div>
               </>
             ) : (
-              <div className="bg-emerald-900/30 border border-emerald-500/50 p-8 rounded-2xl text-center">
-                <CheckCircle2 size={48} className="mx-auto text-emerald-700 mb-4" />
+              <div className="bg-emerald-50 border border-emerald-200 p-8 rounded-2xl text-center">
+                <CheckCircle size={48} className="mx-auto text-emerald-600 mb-4" />
                 <h2 className="text-2xl font-bold uppercase text-emerald-700 mb-2">NO IMMEDIATE THREAT DETECTED</h2>
                 <p className="text-gray-600 text-sm">Your area ({pin}) is currently in a safe zone. Stay tuned for official updates.</p>
               </div>
@@ -95,8 +111,3 @@ export function PublicPortal() {
   );
 }
 
-function CheckCircle2(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
-  );
-}
