@@ -40,7 +40,7 @@ export function Signup() {
           </div>
           <div>
             <h1 className="text-5xl font-black text-gray-900 brand-font tracking-tighter leading-none">
-              Cascade<span className="text-blue-600 ending-serif">Net</span>
+              <span className="wave-underline">Cascade</span><span className="text-blue-600 ending-serif">Net</span>
             </h1>
             <p className="text-gray-400 text-[10px] font-black tracking-[0.3em] uppercase mt-3">Advanced Intelligence & Response</p>
           </div>

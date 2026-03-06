@@ -75,6 +75,29 @@
     text-transform: none;
   }
 
+  .wave-underline {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.16em;
+    z-index: 0;
+  }
+
+  .wave-underline::after {
+    content: '';
+    position: absolute;
+    left: -0.2em;
+    right: -0.2em;
+    bottom: 0.02em;
+    height: 0.5em;
+    z-index: -1;
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 44' preserveAspectRatio='none'%3E%3Cpath d='M-8 25 C 8 9, 24 8, 40 25 C 55 41, 72 40, 88 24 C 103 9, 120 9, 136 24 C 151 39, 167 39, 184 24' fill='none' stroke='%232563eb' stroke-width='8.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 170px 44px;
+    background-repeat: repeat-x;
+    background-position: -10px calc(100% - 1px);
+    pointer-events: none;
+  }
+
   p, li {
     line-height: 1.65;
     max-width: 70ch;
