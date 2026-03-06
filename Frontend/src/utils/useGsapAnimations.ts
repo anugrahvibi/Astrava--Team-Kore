@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | null>) => {
+ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | null>, deps: any[] = []) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -14,66 +14,79 @@ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | nu
       buttons.forEach(btn => {
         const button = btn as HTMLButtonElement;
         
-        // Remove existing transitions to avoid conflicts
-        button.style.transition = 'none';
-
         button.addEventListener('mouseenter', () => {
           gsap.to(button, {
-            scale: 1.05,
-            duration: 0.2,
+            scale: 1.04,
+            borderRadius: '1.25rem',
+            duration: 0.15,
             ease: 'power2.out',
-            boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)'
+            boxShadow: '0 8px 20px -5px rgba(37, 99, 235, 0.25)'
           });
         });
 
         button.addEventListener('mouseleave', () => {
           gsap.to(button, {
             scale: 1,
-            duration: 0.2,
+            borderRadius: '', // Resets to original CSS definition
+            duration: 0.15,
             ease: 'power2.inOut',
-            boxShadow: 'none'
+            boxShadow: 'none',
+            clearProps: "scale,boxShadow,borderRadius"
           });
         });
 
         button.addEventListener('mousedown', () => {
-          gsap.to(button, { scale: 0.95, duration: 0.1 });
+          gsap.to(button, { scale: 0.96, duration: 0.08 });
         });
 
         button.addEventListener('mouseup', () => {
-          gsap.to(button, { scale: 1.05, duration: 0.2 });
+          gsap.to(button, { scale: 1.05, duration: 0.12 });
         });
       });
 
       // 2. Scroll Triggered Entrance Animations for Cards
-      const cards = containerRef.current?.querySelectorAll('.glass-card, .glass-red, .glass-blue, .glass-amber, .glass-emerald, .glass-orange') || [];
+      const cards = containerRef.current?.querySelectorAll('.glass-card, .glass-red, .glass-blue, .glass-amber, .glass-emerald, .glass-orange, .timeline-item, .alert-card-gsap, .gsap-appear') || [];
       cards.forEach((card, index) => {
-        gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 90%',
-            toggleActions: 'play none none none',
-            scroller: containerRef.current || window
-          },
+         gsap.from(card, {
           y: 20,
           opacity: 0,
-          duration: 0.5,
-          delay: index * 0.03,
-          ease: 'power3.out'
+          scale: 0.98,
+          duration: 0.45,
+          delay: Math.min(index * 0.05, 0.4),
+          ease: 'power2.out',
+          clearProps: 'all',
+          immediateRender: false
         });
       });
 
-      // 3. Header Entrance
-      const header = containerRef.current?.querySelector('header');
-      if (header) {
-        gsap.from(header, {
+      // 3. Header/Title Entrance
+      const headers = containerRef.current?.querySelectorAll('header, .gsap-header') || [];
+      headers.forEach(header => {
+         gsap.from(header, {
           y: -15,
           opacity: 0,
-          duration: 0.6,
-          ease: 'power2.out'
+          duration: 0.5,
+          ease: 'power2.out',
+          clearProps: 'all',
+          immediateRender: false
+        });
+      });
+
+      // 4. Staggered List Items
+      const listItems = containerRef.current?.querySelectorAll('li, .gsap-list-item') || [];
+      if (listItems.length > 0) {
+         gsap.from(listItems, {
+          x: -10,
+          opacity: 0,
+          duration: 0.4,
+          stagger: 0.04,
+          ease: 'power2.out',
+          clearProps: 'all',
+          immediateRender: false
         });
       }
-    }, containerRef);
+     }, containerRef.current);
 
     return () => ctx.revert();
-  }, [containerRef]);
+  }, [containerRef, ...deps]);
 };

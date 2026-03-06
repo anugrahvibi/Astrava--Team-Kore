@@ -93,7 +93,8 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
       const coords = getZoneCoords(p.zone_id);
       const color =
         p.alert_level === 'RED' ? '#ef4444' :
-          (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE') ? '#f59e0b' : '#10b981';
+        p.alert_level === 'ORANGE' ? '#f97316' : 
+        p.alert_level === 'AMBER' ? '#f59e0b' : '#10b981';
       const pct = Math.round((p.flood_probability ?? 0) * 100);
       const isSelected = p.zone_id === selectedZoneId;
       const name = (p as any).zone_name || p.zone_id.replace('ZONE_', '').replace(/_/g, ' ');
@@ -103,7 +104,7 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
           radius: 1400,          // ~1.4km radius — clearly visible at zoom 12
           color,
           fillColor: color,
-          fillOpacity: p.alert_level === 'RED' ? 0.40 : (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE' ? 0.28 : 0.12),
+          fillOpacity: p.alert_level === 'RED' ? 0.40 : (p.alert_level === 'ORANGE' ? 0.32 : (p.alert_level === 'AMBER' ? 0.24 : 0.12)),
           weight: isSelected ? 4 : 2,
           opacity: 0.9,
         }).addTo(map);
@@ -205,16 +206,16 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
         position: 'absolute', bottom: 20, right: 20, zIndex: 1000,
         borderRadius: 20, padding: '12px 16px',
         border: '1px solid rgba(255,255,255,0.4)',
-        background: 'rgba(255,255,255,0.6)',
+        background: 'rgba(255,255,255,0.7)',
       }}>
-        <div style={{ fontSize: 8, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#64748b', marginBottom: 8, opacity: 0.6 }}>
+        <div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#334155', marginBottom: 10, opacity: 1 }}>
           Risk Matrix
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {([['#ef4444', 'CRITICAL'], ['#f59e0b', 'ELEVATED'], ['#10b981', 'STABLE']] as const).map(([color, label]) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {([['#ef4444', 'CRITICAL'], ['#f97316', 'SEVERE'], ['#f59e0b', 'ELEVATED'], ['#10b981', 'STABLE']] as const).map(([color, label]) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}40` }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: '#1e293b', letterSpacing: '0.05em' }}>{label}</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}40` }} />
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#020617', letterSpacing: '0.05em' }}>{label}</span>
             </div>
           ))}
         </div>
