@@ -55,18 +55,18 @@ export function PublicPortal() {
           </p>
         </div>
 
-            <div className="max-w-2xl mx-auto w-full">
-               <div className="glass-card p-2 rounded-[2rem] sm:rounded-[2.5rem] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/50 premium-shadow">
-             <input 
+        <div className="max-w-2xl mx-auto w-full">
+          <div className="glass-card p-2 rounded-[2rem] sm:rounded-[2.5rem] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/60 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60">
+            <input 
               type="text" 
               placeholder="Enter sector ID (e.g. ZONE_A)"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              className="glass-input h-14 sm:h-16 border-none bg-transparent shadow-none px-6 sm:px-10"
+              className="glass-input h-14 sm:h-16 border-none bg-transparent shadow-none px-6 sm:px-10 flex-1 min-w-0"
             />
             <button 
               onClick={handleSearch}
-                              className="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-10 h-12 sm:h-16 rounded-[1.25rem] sm:rounded-[2rem] font-black text-[15px] sm:text-[15px] uppercase transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-2 sm:gap-3"
+              className="w-full sm:w-auto shrink-0 justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-10 h-14 sm:h-16 rounded-[1.5rem] sm:rounded-[2rem] font-black text-[15px] uppercase transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-2 sm:gap-3"
             >
               {isSearching ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search size={22} />}
               Search Sector

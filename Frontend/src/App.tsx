@@ -128,29 +128,6 @@ function Navigation() {
     }
   }, [isNotificationsOpen]);
 
-  useEffect(() => {
-    if (navRef.current) {
-      gsap.from(navRef.current, {
-        y: -40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        clearProps: 'y,opacity,transform'
-      });
-      const items = navRef.current.querySelectorAll('.nav-anim-item');
-      if (items.length > 0) {
-        gsap.from(items, {
-          y: -15,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power2.out',
-          delay: 0.2,
-          clearProps: 'y,opacity,transform'
-        });
-      }
-    }
-  }, [location.pathname]); // re-trigger nav entry if desired, or just on mount: []
 
 
   const visibleNotifications = useMemo(() => notifications.slice(0, 8), [notifications]);
@@ -177,8 +154,8 @@ function Navigation() {
 
   return (
     <>
-      <nav ref={navRef} className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-7xl h-14 sm:h-[4.25rem] rounded-[1.4rem] sm:rounded-[1.8rem] flex items-center justify-between px-2 sm:px-3 md:px-4 z-50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/80 bg-white/60 backdrop-blur-2xl">
-        <div className="flex items-center gap-3 md:gap-4 nav-anim-item">
+      <nav ref={navRef} style={{ backdropFilter: 'blur(32px) saturate(200%)', WebkitBackdropFilter: 'blur(32px) saturate(200%)', background: 'rgba(255,255,255,0.6)' }} className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-7xl h-14 sm:h-[4.25rem] rounded-[1.4rem] sm:rounded-[1.8rem] flex items-center justify-between px-2 sm:px-3 md:px-4 z-50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/80">
+        <div className="flex items-center gap-3 md:gap-4">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <div className="w-10 h-10 flex items-center justify-center">
               <img src="/logo.svg" alt="CascadeNet logo" className="w-7 h-7" />
@@ -189,13 +166,13 @@ function Navigation() {
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden md:flex flex-col items-end text-right leading-none nav-anim-item">
+          <div className="hidden md:flex flex-col items-end text-right leading-none">
             <span className="text-[13px] font-black text-gray-800 uppercase">{role}</span>
           </div>
           <button
             aria-label="Open notifications"
             onClick={toggleNotifications}
-            className="nav-anim-item relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-gray-200/60 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/80 text-gray-700 active:scale-90"
+            className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-gray-200/60 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/80 text-gray-700 active:scale-90"
           >
             <Bell size={19} strokeWidth={2.4} className={unreadCount > 0 ? 'animate-pulse text-blue-600' : ''} />
             {unreadCount > 0 && (
@@ -206,7 +183,7 @@ function Navigation() {
           </button>
           <button 
             onClick={logout} 
-            className="nav-anim-item h-9 sm:h-10 w-9 sm:min-w-[112px] sm:w-auto flex items-center justify-center gap-0 sm:gap-2 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/60 text-gray-800 px-0 sm:px-4 rounded-full font-black text-[12px] uppercase border border-gray-200/80 active:scale-95 shadow-sm"
+            className="h-9 sm:h-10 w-9 sm:min-w-[112px] sm:w-auto flex items-center justify-center gap-0 sm:gap-2 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/60 text-gray-800 px-0 sm:px-4 rounded-full font-black text-[12px] uppercase border border-gray-200/80 active:scale-95 shadow-sm"
           >
             <LogOut size={14} className="shrink-0" /> <span className="hidden sm:inline">Logout</span>
           </button>
