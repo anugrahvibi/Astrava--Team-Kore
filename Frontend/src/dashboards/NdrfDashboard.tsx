@@ -47,9 +47,9 @@ export function NdrfDashboard() {
   const criticalLead = leadTimes.sort((a, b) => a.hours_until_peak - b.hours_until_peak)[0];
 
   return (
-    <div className="flex h-full w-full bg-[#f8fafc]">
+    <div className="flex h-full w-full bg-transparent">
       <div className="w-96 h-full glass-card flex flex-col z-10 shadow-xl shrink-0 border-r border-black/5 bg-white/80">
-        <div className="p-6 border-b border-black/5 bg-blue-50/30">
+        <div className="pt-32 p-6 border-b border-black/5 bg-blue-50/30">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-black text-gray-900 brand-font tracking-tight text-lg flex items-center gap-3">
               <Shield className="text-blue-600" size={20} /> NDRF <span className="text-blue-600">TACTICAL</span>
@@ -84,7 +84,7 @@ export function NdrfDashboard() {
                    <span className="text-xs font-black text-red-600 uppercase">{criticalLead.hours_until_peak}H</span>
                 </div>
                 <div className="w-full h-1.5 bg-red-200/50 rounded-full overflow-hidden">
-                   <div className="h-full bg-red-600 transition-all duration-1000" style={{ width: `${(criticalLead.lead_time_hours / 24) * 100}%` }} />
+                   <div className="h-full bg-red-600 transition-all duration-1000" style={{ width: `${(criticalLead.hours_until_peak / 24) * 100}%` }} />
                 </div>
                 <p className="text-[10px] text-red-700 font-bold leading-tight italic">
                    "Immediate action required for {criticalLead.zone_id.replace('ZONE_', '')} sector."

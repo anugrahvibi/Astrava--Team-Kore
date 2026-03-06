@@ -214,9 +214,9 @@ export async function fetchROIRankings(): Promise<ROIRanking[]> {
       const data = await res.json();
       return data.top_10_by_roi.map((item: any) => ({
         node_id: item.node_id,
-        impact_reduction: item.lives_saved,
-        lives_saved: item.approximate_lives_saved,
-        lives_saved_per_rupee: item.lives_saved_per_rupee
+        original_impact: item.lives_saved || 0,
+        lives_saved: item.approximate_lives_saved || 0,
+        lives_saved_per_rupee: item.lives_saved_per_rupee || 0
       }));
     }
   } catch (e) {

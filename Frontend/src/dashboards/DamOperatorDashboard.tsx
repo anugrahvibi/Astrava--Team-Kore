@@ -27,7 +27,7 @@ export function DamOperatorDashboard() {
   const systemStatus = prediction?.alert_level === 'RED' ? 'CRITICAL' : prediction?.alert_level === 'AMBER' ? 'WARNING' : 'NORMAL';
 
   return (
-    <div className="p-8 h-full bg-[#f8fafc] overflow-y-auto w-full custom-scrollbar">
+    <div className="pt-32 p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">

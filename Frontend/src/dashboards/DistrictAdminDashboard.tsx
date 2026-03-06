@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchROIRankings } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, ROIRanking } from '../utils/dataFetcher';
-import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info } from 'lucide-react';
+import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info, Clock } from 'lucide-react';
 
 export function DistrictAdminDashboard() {
   const [zones, setZones] = useState<any[]>([]);
@@ -37,7 +37,7 @@ export function DistrictAdminDashboard() {
   }, 0);
 
   return (
-    <div className="p-8 h-full bg-[#f8fafc] overflow-y-auto w-full custom-scrollbar">
+    <div className="pt-32 p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
