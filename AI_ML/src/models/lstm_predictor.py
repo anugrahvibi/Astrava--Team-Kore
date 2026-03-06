@@ -15,12 +15,18 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 
-# TensorFlow/Keras is optional — fallback to rules-based predictor if not installed
+import traceback
 try:
     import tensorflow as tf
     from tensorflow import keras
     KERAS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(f"[DEBUG] TensorFlow/Keras import failed: {e}")
+    traceback.print_exc()
+    KERAS_AVAILABLE = False
+except Exception as e:
+    print(f"[DEBUG] Unexpected error importing TensorFlow: {e}")
+    traceback.print_exc()
     KERAS_AVAILABLE = False
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
