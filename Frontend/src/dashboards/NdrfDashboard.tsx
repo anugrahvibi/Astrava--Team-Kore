@@ -56,9 +56,9 @@ export function NdrfDashboard() {
     .sort((a, b) => (a.hours_until_peak || 0) - (b.hours_until_peak || 0))[0];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full w-full bg-transparent p-3 sm:p-4 gap-3 sm:gap-4 overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col lg:flex-row h-full w-full bg-transparent pt-24 sm:pt-28 lg:pt-32 p-3 sm:p-4 gap-3 sm:gap-4 overflow-y-auto custom-scrollbar">
       <div className="w-full lg:w-96 h-auto lg:h-full max-h-[52vh] lg:max-h-none glass-card flex flex-col z-10 shadow-xl shrink-0 rounded-[2.5rem] border border-white/70 bg-white/80 overflow-hidden">
-        <div className="pt-24 sm:pt-28 lg:pt-32 p-4 sm:p-6 border-b border-black/5 bg-blue-50/30">
+        <div className="p-4 sm:p-6 border-b border-black/5 bg-blue-50/30">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-black text-gray-900 brand-font tracking-tight text-lg flex items-center gap-3">
               <Shield className="text-blue-600" size={20} /> NDRF <span className="text-blue-600">TACTICAL</span>

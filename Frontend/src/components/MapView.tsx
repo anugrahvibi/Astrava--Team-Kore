@@ -113,24 +113,27 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
           circle.bindTooltip(
             `<div class="map-tooltip-card">
               <div class="tooltip-header">
-                <span class="tooltip-title">${name}</span>
-                <span class="tooltip-badge" style="background:${color}20; color:${color}">${p.alert_level}</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full animate-pulse" style="background: ${color}"></div>
+                  <span class="tooltip-title">${name}</span>
+                </div>
+                <span class="tooltip-badge" style="background:${color}20; color:${color}; border: 1px solid ${color}30">${p.alert_level}</span>
               </div>
               <div class="tooltip-body">
                 <div class="tooltip-metric">
                   <span class="metric-value"><span class="metric-icon">🌊</span>${pct}%</span>
-                  <span class="metric-label">Impact Risk</span>
+                  <span class="metric-label">Risk Index</span>
                 </div>
                 <div class="tooltip-metric">
                   <span class="metric-value"><span class="metric-icon">⏱</span>${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h</span>
-                  <span class="metric-label">Lead Time</span>
+                  <span class="metric-label">Window</span>
                 </div>
               </div>
             </div>`,
             { permanent: true, direction: 'top', className: 'cascade-tooltip', offset: [0, -8] }
           );
         } else {
-          circle.bindTooltip(`<b>${name}</b> · ${pct}% — Stable`, { direction: 'top', className: 'cascade-tooltip-simple' });
+          circle.bindTooltip(`<span><b>${name}</b> · ${pct}% · <span style="opacity:0.6">STABLE</span></span>`, { direction: 'top', className: 'cascade-tooltip-simple' });
         }
 
         circle.on('click', () => onZoneClick(p.zone_id));
