@@ -223,14 +223,11 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
 
       {/* Loading overlay while predictions not yet arrived */}
       {predictions.length === 0 && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)',
-          pointerEvents: 'none',
-        }}>
-          <div className="glass-card" style={{ borderRadius: 16, padding: '16px 24px', fontSize: 11, fontWeight: 900, color: '#3b82f6', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Synchronizing AI Data...
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/20 backdrop-blur-md pointer-events-none">
+          <div className="flex items-center justify-center glass-card px-8 py-5 rounded-2xl shadow-xl min-w-[260px] border border-white/60 bg-white/95 backdrop-blur-3xl shrink-0">
+            <span className="text-[13px] font-black text-blue-600 uppercase whitespace-nowrap animate-pulse">
+              Synchronizing AI Data...
+            </span>
           </div>
         </div>
       )}

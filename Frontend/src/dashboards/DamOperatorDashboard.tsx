@@ -40,11 +40,11 @@ export function DamOperatorDashboard() {
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <Waves size={28} className="text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 brand-font uppercase leading-none">
                 Hydraulic <span className="text-blue-600">Controller</span>
               </h1>
             </div>
-             <p className="text-gray-700 font-bold uppercase tracking-[0.2em] text-[16px] pl-1 flex items-center gap-2">
+             <p className="text-gray-700 font-bold uppercase text-[16px] pl-1 flex items-center gap-2">
                <Activity size={14} className="text-blue-600 animate-pulse" /> Precision Flow & Infrastructure Stability
             </p>
           </div>
@@ -52,8 +52,8 @@ export function DamOperatorDashboard() {
            <div className="flex items-center gap-3 self-stretch sm:self-auto">
              <div className="glass-card px-4 sm:px-6 py-3 sm:py-4 rounded-[1.8rem] flex items-center gap-4 shadow-xl premium-shadow">
                 <div className="text-right">
-                   <div className="text-[16px] font-black text-gray-700 uppercase tracking-widest leading-none mb-1">Hydraulic Status</div>
-                    <div className={`text-[17px] font-black uppercase ${
+                   <div className="text-[16px] font-black text-gray-700 uppercase leading-none mb-1">Hydraulic Status</div>
+                    <div className={`text-[15px] font-black uppercase ${
                       systemStatus === 'CRITICAL' ? 'text-red-600' : 
                       systemStatus === 'WARNING' ? 'text-orange-600' : 'text-emerald-600'
                     }`}>{systemStatus}</div>
@@ -63,9 +63,6 @@ export function DamOperatorDashboard() {
                     systemStatus === 'WARNING' ? 'bg-orange-600' : 'bg-emerald-600'
                  }`} />
              </div>
-             <button className="w-11 h-11 sm:w-12 sm:h-12 glass-card rounded-2xl flex items-center justify-center text-gray-400/60 hover:text-blue-600 border-white/50 bg-white/30 backdrop-blur-md">
-                <Settings size={20} />
-             </button>
           </div>
         </header>
 
@@ -78,8 +75,8 @@ export function DamOperatorDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
           
-          <section className="lg:col-span-1 glass-card rounded-[3rem] border-white/60 p-6 sm:p-10 shadow-xl flex flex-col items-center justify-center bg-white/70 premium-shadow">
-             <h3 className="text-[16px] font-black text-gray-600 uppercase tracking-widest mb-4">Capacity Saturation</h3>
+          <section className="lg:col-span-1 glass-card rounded-[3rem] border-white/60 p-6 sm:p-10 shadow-xl flex flex-col items-center justify-center bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/70 premium-shadow">
+             <h3 className="text-[16px] font-black text-gray-600 uppercase mb-4">Capacity Saturation</h3>
              <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90">
                    <circle cx="96" cy="96" r="80" className="stroke-gray-100 fill-none" strokeWidth="12" />
@@ -92,19 +89,19 @@ export function DamOperatorDashboard() {
                    />
                 </svg>
                 <div className="absolute text-center">
-                   <div className="text-4xl font-black text-gray-950 brand-font tracking-tight">{reservoirPercentage}%</div>
-                   <div className="text-[16px] text-gray-600 font-black uppercase tracking-widest mt-1">Saturated</div>
+                   <div className="text-4xl font-black text-gray-950 brand-font">{reservoirPercentage}%</div>
+                   <div className="text-[16px] text-gray-600 font-black uppercase mt-1">Saturated</div>
                 </div>
              </div>
-             <p className="mt-8 text-center text-gray-700 text-[17px] font-bold leading-relaxed italic max-w-[180px]">"Slight vertical margin increase detected by LSTM models."</p>
+             <p className="mt-8 text-center text-gray-700 text-[15px] font-bold leading-relaxed italic max-w-[180px]">"Slight vertical margin increase detected by LSTM models."</p>
           </section>
 
-          <section className="glass-card rounded-[3rem] border-white/60 overflow-hidden flex flex-col lg:col-span-2 shadow-xl bg-white/70 premium-shadow">
-             <div className="p-5 sm:p-8 border-b border-gray-100 bg-white/50 flex items-center justify-between">
-                 <h2 className="font-black text-gray-950 uppercase tracking-widest text-[17px] flex items-center gap-3">
+          <section className="glass-card rounded-[3rem] border-white/60 overflow-hidden flex flex-col lg:col-span-2 shadow-xl bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/70 premium-shadow">
+             <div className="p-5 sm:p-8 border-b border-gray-100 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/50 flex items-center justify-between">
+                 <h2 className="font-black text-gray-950 uppercase text-[15px] flex items-center gap-3">
                     <Shield size={16} className="text-blue-700" /> Administrative Gate Protocols
                  </h2>
-                 <div className="px-3 py-1 bg-blue-500/10 rounded-full text-[17px] font-black text-blue-700 uppercase tracking-tighter">{alerts.length} ORDERS</div>
+                 <div className="px-3 py-1 bg-blue-500/10 rounded-full text-[15px] font-black text-blue-700 uppercaseer">{alerts.length} ORDERS</div>
               </div>
              <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
@@ -112,21 +109,21 @@ export function DamOperatorDashboard() {
                     <div key={alert.id} className="p-6 bg-blue-50/5 border border-blue-100/50 rounded-[2.5rem] relative group hover:shadow-lg transition-all flex items-center justify-between gap-6 shadow-sm">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                             <div className="glass-emerald px-3 py-1 rounded-xl text-[16px] font-black uppercase tracking-widest">Normal</div>
-                             <div className="text-gray-400 font-black text-[15px] uppercase tracking-widest opacity-60">Protocol Alpha</div>
+                             <div className="glass-emerald px-3 py-1 rounded-xl text-[16px] font-black uppercase">Normal</div>
+                             <div className="text-gray-400 font-black text-[15px] uppercase opacity-60">Protocol Alpha</div>
                         </div>
-                         <p className="text-gray-950 font-bold text-[17px] leading-relaxed italic">"{alert.action_text}"</p>
-                         <div className="mt-2 text-[16px] font-black text-blue-700/60 uppercase tracking-widest flex items-center gap-2">
+                         <p className="text-gray-950 font-bold text-[15px] leading-relaxed italic">"{alert.action_text}"</p>
+                         <div className="mt-2 text-[16px] font-black text-blue-700/60 uppercase flex items-center gap-2">
                             <Target size={12} /> Target: {alert.zone_id}
                          </div>
                       </div>
-                      <ArrowRight size={32} className="text-blue-600 opacity-40 group-hover:opacity-100 group-hover:translate-x-2 transition-all shrink-0 cursor-pointer" />
+                      <div className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center bg-black/5 group-hover:-rotate-45 transition-all duration-300"><ArrowRight size={32} className="text-blue-600 opacity-40 group-hover:opacity-100  transition-all shrink-0 cursor-pointer" /></div>
                     </div>
                   ))
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-40 gap-4">
                     <CheckCircle2 size={48} strokeWidth={1.5} />
-                    <p className="text-[16px] font-black uppercase tracking-[0.2em]">Flow Equilibrium Synchronized</p>
+                    <p className="text-[16px] font-black uppercase">Flow Equilibrium Synchronized</p>
                   </div>
                 )}
              </div>
@@ -152,9 +149,9 @@ function StatCard({ icon, label, value, subtext, glassType }: StatCardProps) {
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border border-white/20`}>
         {React.cloneElement(icon as any, { size: 20, className: 'text-inherit' })}
       </div>
-      <div className="text-[17px] font-black text-gray-700 uppercase tracking-widest mb-1">{label}</div>
-      <div className="text-3xl font-black text-gray-950 brand-font tracking-tight mb-2">{value}</div>
-      <div className="text-[17px] font-bold text-gray-800 uppercase tracking-tighter italic">{subtext}</div>
+      <div className="text-[15px] font-black text-gray-700 uppercase mb-1">{label}</div>
+      <div className="text-3xl font-black text-gray-950 brand-font mb-2">{value}</div>
+      <div className="text-[15px] font-bold text-gray-800 uppercaseer italic">{subtext}</div>
     </div>
   );
 }

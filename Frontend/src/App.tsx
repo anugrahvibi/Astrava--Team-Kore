@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 // CascadeNet: Advanced Intelligence & Response Control System
 import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, X, ArrowRight } from 'lucide-react';
+import { Bell, LogOut, X, ArrowRight, Clock } from 'lucide-react';
 
 // Dashboards
 import { NdrfDashboard } from './dashboards/NdrfDashboard';
@@ -128,6 +128,31 @@ function Navigation() {
     }
   }, [isNotificationsOpen]);
 
+  useEffect(() => {
+    if (navRef.current) {
+      gsap.from(navRef.current, {
+        y: -40,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        clearProps: 'y,opacity,transform'
+      });
+      const items = navRef.current.querySelectorAll('.nav-anim-item');
+      if (items.length > 0) {
+        gsap.from(items, {
+          y: -15,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          delay: 0.2,
+          clearProps: 'y,opacity,transform'
+        });
+      }
+    }
+  }, [location.pathname]); // re-trigger nav entry if desired, or just on mount: []
+
+
   const visibleNotifications = useMemo(() => notifications.slice(0, 8), [notifications]);
 
   const onNotificationClick = () => {
@@ -145,32 +170,32 @@ function Navigation() {
   };
 
   const getSeverityClasses = (level: string) => {
-    if (level === 'RED') return 'border-l-red-500 bg-red-50/20 text-red-900 hover:border-red-400';
-    if (level === 'AMBER' || level === 'ORANGE') return 'border-l-orange-500 bg-orange-50/20 text-orange-900 hover:border-orange-400';
-    return 'border-l-emerald-500 bg-emerald-50/15 text-emerald-900 hover:border-emerald-400';
+    if (level === 'RED') return 'glass-red border-l-red-600/60 shadow-red-500/5';
+    if (level === 'AMBER' || level === 'ORANGE') return 'glass-orange border-l-orange-600/60 shadow-orange-500/5';
+    return 'glass-blue border-l-blue-600/60 shadow-blue-500/5';
   };
 
   return (
     <>
-      <nav ref={navRef} style={{ backdropFilter: 'blur(32px) saturate(200%)', WebkitBackdropFilter: 'blur(32px) saturate(200%)', background: 'rgba(255,255,255,0.6)' }} className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-7xl h-14 sm:h-[4.25rem] rounded-[1.4rem] sm:rounded-[1.8rem] flex items-center justify-between px-4 sm:px-6 md:px-7 z-50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/80">
-        <div className="flex items-center gap-3 md:gap-4">
+      <nav ref={navRef} className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-7xl h-14 sm:h-[4.25rem] rounded-[1.4rem] sm:rounded-[1.8rem] flex items-center justify-between px-2 sm:px-3 md:px-4 z-50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/80 bg-white/60 backdrop-blur-2xl">
+        <div className="flex items-center gap-3 md:gap-4 nav-anim-item">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <div className="w-10 h-10 flex items-center justify-center">
               <img src="/logo.svg" alt="CascadeNet logo" className="w-7 h-7" />
             </div>
-            <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-950 brand-font leading-none">
+            <h1 className="text-lg sm:text-xl font-black text-gray-950 brand-font leading-none">
               Cascade<span className="text-blue-700 ending-serif">Net</span>
             </h1>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden md:flex flex-col items-end text-right leading-none">
-            <span className="text-[13px] font-black text-gray-800 uppercase tracking-[0.2em]">{role}</span>
+          <div className="hidden md:flex flex-col items-end text-right leading-none nav-anim-item">
+            <span className="text-[13px] font-black text-gray-800 uppercase">{role}</span>
           </div>
           <button
             aria-label="Open notifications"
             onClick={toggleNotifications}
-            className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-gray-200/60 bg-white/80 text-gray-700 active:scale-90"
+            className="nav-anim-item relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-gray-200/60 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/80 text-gray-700 active:scale-90"
           >
             <Bell size={19} strokeWidth={2.4} className={unreadCount > 0 ? 'animate-pulse text-blue-600' : ''} />
             {unreadCount > 0 && (
@@ -181,7 +206,7 @@ function Navigation() {
           </button>
           <button 
             onClick={logout} 
-            className="h-9 sm:h-10 w-9 sm:min-w-[112px] sm:w-auto flex items-center justify-center gap-0 sm:gap-2 bg-white/60 text-gray-800 px-0 sm:px-4 rounded-full font-black text-[12px] uppercase tracking-[0.16em] border border-gray-200/80 active:scale-95 shadow-sm"
+            className="nav-anim-item h-9 sm:h-10 w-9 sm:min-w-[112px] sm:w-auto flex items-center justify-center gap-0 sm:gap-2 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/60 text-gray-800 px-0 sm:px-4 rounded-full font-black text-[12px] uppercase border border-gray-200/80 active:scale-95 shadow-sm"
           >
             <LogOut size={14} className="shrink-0" /> <span className="hidden sm:inline">Logout</span>
           </button>
@@ -190,30 +215,30 @@ function Navigation() {
 
       {isRendered && (
         <>
-          <aside ref={notificationRef} className="fixed top-[5.25rem] sm:top-[6.8rem] right-[3%] sm:right-[4%] md:right-7 w-[360px] max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100dvh-6rem)] sm:max-h-[76vh] z-[60] rounded-[1.5rem] sm:rounded-[2rem] border border-white/80 bg-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden origin-top-right backdrop-blur-3xl">
-             <header className="h-16 px-6 border-b border-white/20 flex items-center justify-between bg-white/20 backdrop-blur-3xl">
+          <aside ref={notificationRef} className="fixed top-[5.25rem] sm:top-[6.8rem] right-[3%] sm:right-[4%] md:right-7 w-[360px] max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100dvh-6rem)] sm:max-h-[76vh] z-[60] rounded-[1.5rem] sm:rounded-[2rem] border border-white/80 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/60 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden origin-top-right backdrop-blur-3xl">
+             <header className="h-16 px-6 border-b border-white/20 flex items-center justify-between bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/20 backdrop-blur-3xl">
               <div>
-                 <div className="text-[14px] font-black tracking-[0.3em] text-blue-900 uppercase">Astrava Directive Hub</div>
-                 <div className="text-[12px] font-black text-blue-800/40 uppercase tracking-widest mt-0.5">Live Sector Sync</div>
+                 <div className="text-[14px] font-black text-blue-900 uppercase">Astrava Directive Hub</div>
+                 <div className="text-[12px] font-black text-blue-800/40 uppercase mt-0.5">Live Sector Sync</div>
               </div>
               <div className="flex items-center gap-3">
                 <button
                    onClick={clearNotifications}
-                   className="px-4 py-1.5 rounded-full text-[14px] font-black text-blue-700 hover:text-blue-900 hover:bg-blue-50/50 uppercase tracking-[0.2em] transition-all gsap-header"
+                   className="px-4 py-1.5 rounded-full text-[14px] font-black text-blue-700 hover:text-blue-900 hover:bg-blue-50/50 uppercase transition-all gsap-header"
                 >
                   Clear Hub
                 </button>
                 <button
                   aria-label="Close directive hub"
                   onClick={toggleNotifications}
-                  className="h-9 w-9 rounded-2xl border border-white/40 text-blue-900 hover:bg-white/80 flex items-center justify-center transition-all active:scale-90"
+                  className="h-9 w-9 rounded-2xl border border-white/40 text-blue-900 hover:bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/80 flex items-center justify-center transition-all active:scale-90"
                 >
                   <X size={16} />
                 </button>
               </div>
             </header>
 
-            <div className="max-h-[calc(76vh-3.5rem)] overflow-y-auto custom-scrollbar p-3.5 space-y-2.5 bg-white/20">
+            <div className="max-h-[calc(76vh-3.5rem)] overflow-y-auto custom-scrollbar p-3.5 space-y-2.5 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/20">
               {visibleNotifications.length > 0 ? (
                 visibleNotifications.map((item) => (
                    <button
@@ -223,12 +248,12 @@ function Navigation() {
                   >
                      <div className="flex-1">
                        <div className="flex items-center justify-between gap-3 mb-2">
-                         <span className={`text-[15px] font-black uppercase tracking-widest truncate ${item.alert_level === 'RED' ? 'text-red-700' : (item.alert_level === 'AMBER' || item.alert_level === 'ORANGE' ? 'text-orange-700' : 'text-emerald-700')}`}>{item.zone_id}</span>
-                         <span className={`px-2 py-0.5 rounded-full text-[13px] font-black uppercase tracking-widest ${item.alert_level === 'RED' ? 'bg-red-600/10 text-red-700' : (item.alert_level === 'AMBER' || item.alert_level === 'ORANGE' ? 'bg-orange-600/10 text-orange-700' : 'bg-emerald-600/10 text-emerald-700')}`}>{item.alert_level}</span>
+                         <span className={`text-[15px] font-black uppercase truncate ${item.alert_level === 'RED' ? 'text-red-700' : (item.alert_level === 'AMBER' || item.alert_level === 'ORANGE' ? 'text-orange-700' : 'text-emerald-700')}`}>{item.zone_id}</span>
+                         <span className={`px-2 py-0.5 rounded-full text-[13px] font-black uppercase ${item.alert_level === 'RED' ? 'bg-red-600/10 text-red-700' : (item.alert_level === 'AMBER' || item.alert_level === 'ORANGE' ? 'bg-orange-600/10 text-orange-700' : 'bg-emerald-600/10 text-emerald-700')}`}>{item.alert_level}</span>
                        </div>
                        <p className="text-[16px] font-bold leading-snug text-gray-900 line-clamp-2 italic">"{item.action_text}"</p>
                        {item.deadline_hrs !== undefined && (
-                         <div className="mt-3 text-[14px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                         <div className="mt-3 text-[14px] font-black text-gray-500 uppercase flex items-center gap-2">
                            <Clock size={12} className="opacity-40" /> T-{item.deadline_hrs}H
                          </div>
                        )}
@@ -237,7 +262,7 @@ function Navigation() {
                   </button>
                 ))
               ) : (
-                <div className="py-12 px-6 text-center rounded-2xl border border-dashed border-white/80 bg-white/40 backdrop-blur-sm">
+                <div className="py-12 px-6 text-center rounded-2xl border border-dashed border-white/80 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/40 backdrop-blur-sm">
                   <p className="text-[15px] font-semibold text-gray-400">No active notifications</p>
                 </div>
               )}

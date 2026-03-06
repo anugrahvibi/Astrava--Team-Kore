@@ -13,7 +13,7 @@ export function CascadeTimeline({ events }: { events: TimelineEvent[] }) {
   useGsapAnimations(containerRef);
 
   if (events.length === 0) {
-    return <div className="text-blue-800/40 font-black text-[16px] uppercase tracking-[0.3em] text-center py-12 italic">Operational Vacuum: No Cascades Detected</div>;
+    return <div className="text-blue-800/40 font-black text-[16px] uppercase text-center py-12 italic">Operational Vacuum: No Cascades Detected</div>;
   }
 
   return (
@@ -42,15 +42,15 @@ export function CascadeTimeline({ events }: { events: TimelineEvent[] }) {
             <div className={`p-6 rounded-[2.2rem] border border-white/40 shadow-sm hover:shadow-lg transition-all ${activeGlass} backdrop-blur-xl space-y-4`}>
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                   <span className="text-[14px] font-black text-blue-900/60 uppercase tracking-[0.2em]">{evt.hour}H PULSE</span>
-                   <span className={`text-[12px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest bg-white/20`}>
+                   <span className="text-[14px] font-black text-blue-900/60 uppercase">{evt.hour}H PULSE</span>
+                   <span className={`text-[12px] font-black px-2.5 py-0.5 rounded-full uppercase bg-white/20`}>
                       {evt.node.type}
                    </span>
                 </div>
               </div>
               
               <div className="space-y-2">
-                 <div className="text-[17px] font-black text-gray-950 uppercase tracking-tight">
+                 <div className="text-[15px] font-black text-gray-950 uppercase">
                    {evt.node.name}
                  </div>
                  <div className="text-[16px] text-gray-700 font-bold leading-relaxed italic opacity-80">

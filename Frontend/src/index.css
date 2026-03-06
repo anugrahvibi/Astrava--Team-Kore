@@ -108,11 +108,11 @@
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .glass-blue { background: rgba(37, 99, 235, 0.08); color: #1d4ed8; border: none; box-shadow: none; }
-  .glass-red { background: rgba(239, 68, 68, 0.08); color: #b91c1c; border: none; box-shadow: none; }
-  .glass-amber { background: rgba(245, 158, 11, 0.08); color: #b45309; border: none; box-shadow: none; }
-  .glass-orange { background: rgba(249, 115, 22, 0.08); color: #c2410c; border: none; box-shadow: none; }
-  .glass-emerald { background: rgba(16, 185, 129, 0.08); color: #047857; border: none; box-shadow: none; }
+  .glass-blue { background: rgba(37, 99, 235, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(37, 99, 235, 0.1); color: #1d4ed8; }
+  .glass-red { background: rgba(239, 68, 68, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(239, 68, 68, 0.1); color: #b91c1c; }
+  .glass-amber { background: rgba(245, 158, 11, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(245, 158, 11, 0.1); color: #b45309; }
+  .glass-orange { background: rgba(249, 115, 22, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(249, 115, 22, 0.1); color: #c2410c; }
+  .glass-emerald { background: rgba(16, 185, 129, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(16, 185, 129, 0.1); color: #047857; }
 
   .glow-red { box-shadow: 0 0 25px rgba(239, 68, 68, 0.15); }
   .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.15); }
@@ -120,15 +120,15 @@
   .premium-shadow { box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08); }
 
   .glass-input {
-    @apply w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl px-6 py-4 text-[17px] font-bold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm;
+    @apply w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl px-6 py-4 text-[15px] font-bold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm;
   }
 
   .glass-select {
-    @apply w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl px-6 py-4 text-[17px] font-bold text-gray-900 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all appearance-none cursor-pointer shadow-sm;
+    @apply w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl px-6 py-4 text-[15px] font-bold text-gray-900 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all appearance-none cursor-pointer shadow-sm;
   }
 
   .glass-select-compact {
-    @apply bg-blue-50/50 backdrop-blur-md border border-blue-100 rounded-xl px-4 py-2 text-[17px] font-black text-blue-700 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all appearance-none cursor-pointer;
+    @apply bg-blue-50/50 backdrop-blur-md border border-blue-100 rounded-xl px-4 py-2 text-[15px] font-black text-blue-700 focus:outline-none focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all appearance-none cursor-pointer;
   }
 }
 
