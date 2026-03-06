@@ -33,7 +33,7 @@ export function PublicPortal() {
   };
 
   return (
-      <div className="pt-20 sm:pt-28 lg:pt-32 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
+      <div className="pt-20 sm:pt-24 lg:pt-26 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-20 space-y-10 sm:space-y-16">
         
         {/* Cinematic Header */}

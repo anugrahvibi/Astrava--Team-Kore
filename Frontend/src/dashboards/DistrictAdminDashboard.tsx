@@ -37,7 +37,7 @@ export function DistrictAdminDashboard() {
   }, 0);
 
   return (
-    <div className="pt-24 sm:pt-28 lg:pt-32 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
+    <div className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
