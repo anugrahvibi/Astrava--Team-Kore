@@ -44,7 +44,7 @@ function Navigation() {
         </div>
         <button 
           onClick={logout} 
-          className="h-10 min-w-[112px] flex items-center justify-center gap-2 bg-white/35 backdrop-blur-md hover:bg-red-600/90 text-gray-700 hover:text-white px-4 rounded-full font-black text-[10px] uppercase tracking-[0.14em] transition-all duration-300 border border-white/70 hover:border-red-500 shadow-md hover:shadow-lg hover:shadow-red-500/20 active:scale-95"
+          className="h-10 min-w-[112px] flex items-center justify-center gap-2 bg-white/55 hover:bg-red-600 text-gray-700 hover:text-white px-4 rounded-full font-black text-[10px] uppercase tracking-[0.14em] transition-all duration-300 border border-gray-200 hover:border-red-600 active:scale-95"
         >
           <LogOut size={14} className="shrink-0" /> <span>Logout</span>
         </button>
