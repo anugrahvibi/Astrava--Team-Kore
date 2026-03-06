@@ -3,486 +3,591 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CascadeNet 2.0 — Test Dashboard</title>
+  <title>CascadeNet 2.0 | Command Center</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0a0e1a;
-      color: #e2e8f0;
-      min-height: 100vh;
+    :root {
+      --bg: #030712;
+      --card: #0d1117;
+      --card2: #111827;
+      --border: #1f2937;
+      --blue: #3b82f6;
+      --blue-glow: rgba(59,130,246,0.3);
+      --green: #10b981;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --dim: #6b7280;
+      --text: #f1f5f9;
     }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family:'Outfit',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+    ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
+    /* HEADER */
     header {
-      background: linear-gradient(135deg, #1a1f35 0%, #0f1729 100%);
-      border-bottom: 1px solid #2d3748;
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      height: 56px; min-height: 56px;
+      background: rgba(13,17,23,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 20px; gap: 16px;
+      z-index: 200;
+    }
+    .logo { font-size:1.1rem; font-weight:800; letter-spacing:-0.03em; }
+    .logo span { color:var(--blue); }
+    .tagline { font-size:0.72rem; color:var(--dim); margin-left:4px; }
+    .header-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+    .pill { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:var(--card2); border:1px solid var(--border); font-size:0.75rem; color:var(--dim); }
+    .dot { width:7px; height:7px; border-radius:50%; background:var(--red); }
+    .dot.on { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+    .hour-badge { font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--blue); background:rgba(59,130,246,0.1); padding:4px 10px; border-radius:6px; border:1px solid rgba(59,130,246,0.3); }
+
+    /* LAYOUT */
+    .workspace {
+      flex:1;
+      display:grid;
+      grid-template-columns: 300px 1fr 320px;
+      gap:0;
+      overflow:hidden;
     }
 
-    header h1 { font-size: 1.4rem; font-weight: 700; color: #60a5fa; letter-spacing: 0.05em; }
-    header p  { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+    /* PANELS */
+    .panel { border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+    .panel:last-child { border-right:0; border-left:1px solid var(--border); }
+    .ph { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; min-height:44px; }
+    .ph-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--dim); }
+    .pc { flex:1; overflow-y:auto; padding:12px; }
 
-    #api-status {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.82rem; color: #94a3b8;
+    /* MAP CENTER */
+    .map-panel { position:relative; }
+    #map { width:100%; height:100%; background:#060c18; }
+    .leaflet-container { background:#060c18 !important; font-family:'Outfit',sans-serif !important; }
+
+    /* TIMELINE BAR */
+    .timeline-bar {
+      position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+      width:calc(100% - 32px); max-width:700px;
+      z-index:500;
+      background:rgba(13,17,23,0.92);
+      backdrop-filter:blur(12px);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 16px;
+      display:flex; align-items:center; gap:14px;
     }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
-    .dot.online { background: #22c55e; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
-
-    main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
-
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-
-    .card {
-      background: #111827;
-      border: 1px solid #1e2d45;
-      border-radius: 12px;
-      padding: 22px;
+    .play-btn {
+      width:36px; height:36px; min-width:36px;
+      background:var(--blue); border:none; border-radius:50%;
+      color:white; font-size:0.9rem;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all .15s; box-shadow:0 0 12px var(--blue-glow);
     }
-    .card h2 {
-      font-size: 0.95rem; font-weight: 600;
-      color: #93c5fd; margin-bottom: 4px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .card .desc { font-size: 0.78rem; color: #475569; margin-bottom: 14px; }
+    .play-btn:hover { transform:scale(1.1); }
+    .track { flex:1; height:6px; background:var(--border); border-radius:3px; cursor:pointer; position:relative; }
+    .track-fill { height:100%; background:linear-gradient(90deg,var(--blue),#6366f1); border-radius:3px; width:0%; transition:width .15s; }
+    .track-thumb { width:12px; height:12px; background:white; border-radius:50%; position:absolute; top:-3px; left:0%; transform:translateX(-50%); pointer-events:none; box-shadow:0 0 6px rgba(0,0,0,.5); transition:left .15s; }
+    .t-lbl { font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--text); min-width:44px; }
 
-    .tag {
-      display: inline-block;
-      padding: 2px 8px; border-radius: 4px;
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
-      margin-right: 6px;
-    }
-    .tag.post { background: #16a34a22; color: #4ade80; border: 1px solid #4ade8044; }
-    .tag.get  { background: #1d4ed822; color: #60a5fa; border: 1px solid #60a5fa44; }
+    /* STAT BOXES */
+    .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+    .stat-box { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:10px; }
+    .stat-val { font-size:1.2rem; font-weight:800; color:var(--blue); }
+    .stat-lbl { font-size:0.65rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
 
-    button {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: white; border: none; border-radius: 7px;
-      padding: 9px 18px; font-size: 0.83rem; font-weight: 600;
-      cursor: pointer; transition: opacity .15s;
+    /* BUTTONS */
+    .btn {
+      width:100%; padding:10px; border:none; border-radius:8px;
+      background:var(--blue); color:white; font-size:0.82rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:all .15s; letter-spacing:.03em;
     }
-    button:hover { opacity: 0.85; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn:hover { background:#2563eb; transform:translateY(-1px); box-shadow:0 4px 16px var(--blue-glow); }
+    .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+    .btn-sm { padding:7px 12px; font-size:0.75rem; width:auto; }
+    .btn-danger { background:#7f1d1d; }
+    .btn-danger:hover { background:var(--red); }
 
-    .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-    input[type="text"], input[type="number"] {
-      background: #0f172a; border: 1px solid #334155;
-      color: #e2e8f0; border-radius: 7px; padding: 8px 12px;
-      font-size: 0.83rem; flex: 1; min-width: 120px;
+    /* SPINNER */
+    .spinner { width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .6s linear infinite; display:none; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* NODE LIST */
+    .node-row { display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; margin-bottom:6px; background:var(--card2); border:1px solid var(--border); transition:background .15s; }
+    .node-row:hover { background:#1a2434; }
+    .ndot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+    .ndot.failed { background:var(--red); box-shadow:0 0 8px var(--red); animation:blink 1s infinite; }
+    .node-id { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--blue); min-width:60px; }
+    .node-name { font-size:0.73rem; color:var(--dim); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .node-pop { font-size:0.7rem; color:var(--orange); font-weight:600; }
+    .type-badge { font-size:0.6rem; padding:2px 6px; border-radius:4px; font-weight:700; text-transform:uppercase; }
+    .type-substation { background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.3); }
+    .type-water_pump { background:rgba(59,130,246,.15); color:#93c5fd; border:1px solid rgba(59,130,246,.3); }
+    .type-hospital { background:rgba(16,185,129,.15); color:#6ee7b7; border:1px solid rgba(16,185,129,.3); }
+
+    /* LOG */
+    .log { font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:#4ade80; background:#000; border:1px solid #0d2018; padding:10px; border-radius:8px; height:110px; overflow-y:auto; line-height:1.5; margin-top:12px; }
+
+    /* CHART */
+    .chart-wrap { height:150px; margin-top:12px; }
+
+    /* ROI */
+    .roi-card { background:linear-gradient(135deg,#0f2040,#0a1628); border:1px solid #1e3a8a; border-radius:12px; padding:14px; margin-bottom:12px; }
+    .roi-lpr { font-size:2rem; font-weight:800; color:var(--green); line-height:1; }
+    .roi-lpr-label { font-size:0.65rem; color:#60a5fa; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+    .roi-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .roi-stat { background:rgba(0,0,0,.3); padding:8px; border-radius:6px; }
+    .roi-stat-val { font-size:0.95rem; font-weight:700; }
+    .roi-stat-lbl { font-size:0.6rem; color:var(--dim); text-transform:uppercase; margin-top:2px; }
+    .roi-rec { font-size:0.7rem; color:#94a3b8; margin-top:10px; line-height:1.4; border-top:1px solid rgba(255,255,255,.05); padding-top:10px; }
+
+    /* FORM */
+    label { display:block; font-size:0.7rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px; }
+    select, input[type="number"] {
+      width:100%; background:#0d1117; border:1px solid var(--border);
+      color:white; border-radius:7px; padding:8px 10px; font-size:0.8rem;
+      font-family:'Outfit',sans-serif; margin-bottom:10px;
     }
+    select:focus, input:focus { outline:none; border-color:var(--blue); }
 
-    .result-box {
-      background: #0a0f1e;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 14px;
-      font-size: 0.76rem;
-      color: #94a3b8;
-      font-family: 'Courier New', monospace;
-      max-height: 280px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-      min-height: 60px;
-      margin-top: 12px;
-    }
+    /* SCENARIO BADGE */
+    .sev-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:0.65rem; font-weight:700; text-transform:uppercase; }
+    .sev-LOW    { background:rgba(16,185,129,.15); color:#6ee7b7; border:1px solid rgba(16,185,129,.3); }
+    .sev-MODERATE { background:rgba(245,158,11,.15); color:#fcd34d; border:1px solid rgba(245,158,11,.3); }
+    .sev-HIGH   { background:rgba(249,115,22,.15); color:#fdba74; border:1px solid rgba(249,115,22,.3); }
+    .sev-EXTREME{ background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.3); }
 
-    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .stat-card {
-      background: #0f172a; border: 1px solid #1e293b;
-      border-radius: 8px; padding: 12px;
-      text-align: center;
-    }
-    .stat-card .val { font-size: 1.3rem; font-weight: 700; color: #f59e0b; }
-    .stat-card .lbl { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
-
-    .severity-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-    .sev-low    { background: #22c55e; }
-    .sev-mod    { background: #f59e0b; }
-    .sev-high   { background: #f97316; }
-    .sev-ext    { background: #ef4444; }
-
-    .sev-legend { display: flex; gap: 12px; font-size: 0.72rem; color: #64748b; margin-top: 4px; }
-    .sev-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 3px; }
-
-    .node-list { list-style: none; }
-    .node-list li {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 7px 10px; border-radius: 6px; font-size: 0.78rem;
-      margin-bottom: 5px; background: #0f172a;
-    }
-    .node-list .nid { color: #60a5fa; font-weight: 600; font-family: monospace; }
-    .node-list .impact { color: #f59e0b; font-size: 0.72rem; }
-    .node-list .badge {
-      font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; font-weight: 600;
-    }
-    .badge.sub   { background: #ef444422; color: #f87171; border: 1px solid #ef444455; }
-    .badge.pump  { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f655; }
-    .badge.hosp  { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e55; }
-
-    .roi-highlight {
-      background: linear-gradient(135deg, #0f2a14, #0a1a0a);
-      border: 1px solid #22c55e44; border-radius: 8px;
-      padding: 14px; margin-top: 12px;
-    }
-    .roi-highlight .key { font-size: 0.75rem; color: #64748b; }
-    .roi-highlight .roi-val { font-size: 1.6rem; font-weight: 800; color: #4ade80; }
-    .roi-highlight .rec { font-size: 0.75rem; color: #94a3b8; margin-top: 6px; }
-
-    .spinner {
-      display: none; width: 16px; height: 16px;
-      border: 2px solid #334155; border-top-color: #60a5fa;
-      border-radius: 50%; animation: spin .7s linear infinite;
-      margin-left: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .full-width { grid-column: 1 / -1; }
-
-    select {
-      background: #0f172a; border: 1px solid #334155;
-      color: #e2e8f0; border-radius: 7px; padding: 8px 12px;
-      font-size: 0.83rem;
-    }
-
-    .timeline-row {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
-    }
-    .hour-cell {
-      min-width: 36px; padding: 5px 4px; border-radius: 5px;
-      text-align: center; font-size: 0.65rem; font-weight: 600;
-    }
-    .hour-safe   { background: #0f2a14; color: #4ade80; border: 1px solid #22c55e33; }
-    .hour-danger { background: #2a0f0f; color: #f87171; border: 1px solid #ef444433; }
-
-    #rank-table { width: 100%; border-collapse: collapse; font-size: 0.77rem; }
-    #rank-table th {
-      text-align: left; padding: 8px 10px;
-      border-bottom: 1px solid #1e293b; color: #475569; font-weight: 600;
-    }
-    #rank-table td { padding: 8px 10px; border-bottom: 1px solid #0f172a; }
-    #rank-table tr:hover td { background: #0f172a; }
+    /* DIVIDER */
+    .divider { height:1px; background:var(--border); margin:12px 0; }
   </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>⚡ CascadeNet 2.0 — Test Dashboard</h1>
-    <p>AI/ML Testing Interface · Kochi Infrastructure Cascade Predictor · Asthrava Hackathon</p>
-  </div>
-  <div id="api-status">
-    <div class="dot" id="status-dot"></div>
-    <span id="status-text">Checking API...</span>
+  <div class="logo">Cascade<span>Net</span> 2.0</div>
+  <div class="tagline">Kochi Infrastructure Cascade Predictor · AI/ML Command Center</div>
+  <div class="header-right">
+    <div class="hour-badge">T+<span id="h-hour">00</span>:00</div>
+    <div class="pill"><div class="dot" id="api-dot"></div><span id="api-txt">CONNECTING...</span></div>
   </div>
 </header>
 
-<main>
-  <div class="grid">
+<div class="workspace">
 
-    <!-- SIMULATE -->
-    <div class="card">
-      <h2><span class="tag post">POST</span>/simulate</h2>
-      <p class="desc">Run all 100 flood scenarios. First call initialises the pipeline (~15s).</p>
-      <button id="btn-simulate" onclick="runSimulate()">▶ Run Simulation</button>
-      <span class="spinner" id="spin-simulate"></span>
-      <div id="sim-stats" class="stat-grid" style="display:none; margin-top:14px;">
-        <div class="stat-card"><div class="val" id="s-avg">—</div><div class="lbl">Avg Population Impact</div></div>
-        <div class="stat-card"><div class="val" id="s-max">—</div><div class="lbl">Worst Scenario Impact</div></div>
-        <div class="stat-card"><div class="val" id="s-nodes">—</div><div class="lbl">Avg Nodes Failed</div></div>
-        <div class="stat-card"><div class="val" id="s-total">—</div><div class="lbl">Scenarios Run</div></div>
+  <!-- LEFT: Simulation Panel -->
+  <div class="panel">
+    <div class="ph"><span class="ph-title">Pipeline Control</span></div>
+    <div class="pc">
+
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val" id="s-avg">—</div><div class="stat-lbl">Avg Impact</div></div>
+        <div class="stat-box"><div class="stat-val" id="s-nodes">—</div><div class="stat-lbl">Avg Failed</div></div>
+        <div class="stat-box"><div class="stat-val" id="s-worst">—</div><div class="stat-lbl">Worst Pop.</div></div>
+        <div class="stat-box"><div class="stat-val" id="s-scen">100</div><div class="stat-lbl">Scenarios</div></div>
       </div>
-      <div id="sev-section" style="display:none; margin-top:10px;">
-        <div class="severity-bar">
-          <div class="sev-low"  id="sev-low-bar"></div>
-          <div class="sev-mod"  id="sev-mod-bar"></div>
-          <div class="sev-high" id="sev-high-bar"></div>
-          <div class="sev-ext"  id="sev-ext-bar"></div>
-        </div>
-        <div class="sev-legend">
-          <span><span class="sev-dot" style="background:#22c55e"></span>Low</span>
-          <span><span class="sev-dot" style="background:#f59e0b"></span>Moderate</span>
-          <span><span class="sev-dot" style="background:#f97316"></span>High</span>
-          <span><span class="sev-dot" style="background:#ef4444"></span>Extreme</span>
-        </div>
+
+      <button class="btn" id="btn-sim" onclick="runSimulate()">
+        ▶ RUN PIPELINE ENSEMBLE
+        <div class="spinner" id="sp-sim"></div>
+      </button>
+
+      <div class="divider"></div>
+
+      <div style="font-size:0.7rem; color:var(--dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em;">ACTIVE SCENARIO</div>
+      <div id="scen-info" style="font-size:0.8rem; color:var(--dim);">Run simulation to load scenarios.</div>
+
+      <div class="chart-wrap">
+        <canvas id="chart-impact"></canvas>
       </div>
-      <div class="result-box" id="result-simulate">Output will appear here...</div>
+
+      <div class="log" id="log-box">
+&gt; SYSTEM INITIALIZED<br>
+&gt; Waiting for pipeline...
+      </div>
     </div>
-
-    <!-- WHAT-IF HARDEN -->
-    <div class="card">
-      <h2><span class="tag post">POST</span>/harden/{node_id}</h2>
-      <p class="desc">Harden a node (flood-proof it) and see the lives-saved ROI.</p>
-      <div class="input-row">
-        <select id="harden-node-id">
-          <option value="SUB_1">SUB_1 – Ernakulam Main Substation</option>
-          <option value="SUB_2">SUB_2 – Kalamassery Substation</option>
-          <option value="SUB_3">SUB_3 – Vyttila Substation</option>
-          <option value="SUB_4" selected>SUB_4 – Fort Kochi Substation</option>
-          <option value="SUB_5">SUB_5 – Aluva Substation</option>
-          <option value="PUMP_6">PUMP_6 – Mattancherry Pump</option>
-          <option value="PUMP_7">PUMP_7 – Thevara Pump</option>
-          <option value="HOSP_3">HOSP_3 – Lisie Hospital Fort Kochi</option>
-        </select>
-        <input type="number" id="harden-cost" value="1000000" placeholder="Cost in ₹" style="max-width:130px;"/>
-      </div>
-      <button onclick="runHarden()">🛡 Run What-If Analysis</button>
-      <span class="spinner" id="spin-harden"></span>
-      <div id="roi-display" class="roi-highlight" style="display:none;">
-        <div class="key">Lives-Saved-Per-Rupee</div>
-        <div class="roi-val" id="roi-lpr">—</div>
-        <div style="display:flex; gap:24px; margin-top:8px;">
-          <div><div class="key">Lives Saved</div><div style="color:#f59e0b;font-weight:700;" id="roi-lives">—</div></div>
-          <div><div class="key">ROI Ratio</div><div style="color:#60a5fa;font-weight:700;" id="roi-ratio">—</div></div>
-        </div>
-        <div class="rec" id="roi-rec">—</div>
-      </div>
-      <div class="result-box" id="result-harden">Output will appear here...</div>
-    </div>
-
-    <!-- GRAPH -->
-    <div class="card">
-      <h2><span class="tag get">GET</span>/graph</h2>
-      <p class="desc">See all 18 infrastructure nodes and their RF-weighted edges.</p>
-      <button onclick="loadGraph()">🗺 Load Graph</button>
-      <span class="spinner" id="spin-graph"></span>
-      <ul class="node-list" id="node-list" style="margin-top:12px;"></ul>
-      <div class="result-box" id="result-graph" style="display:none;"></div>
-    </div>
-
-    <!-- SCENARIOS TIMELINE -->
-    <div class="card">
-      <h2><span class="tag get">GET</span>/scenarios — Failure Timeline</h2>
-      <p class="desc">View the hour-by-hour failure timeline for any scenario.</p>
-      <div class="input-row">
-        <input type="number" id="scenario-id" value="1" min="1" max="100" placeholder="Scenario #" style="max-width:110px;"/>
-        <button onclick="loadTimeline()">📅 View Timeline</button>
-        <span class="spinner" id="spin-timeline"></span>
-      </div>
-      <div id="timeline-display" style="display:none;">
-        <div style="font-size:0.75rem; color:#64748b; margin-bottom:6px;">Hour → Failed Nodes</div>
-        <div class="timeline-row" id="timeline-cells"></div>
-      </div>
-      <div class="result-box" id="result-timeline">Output will appear here...</div>
-    </div>
-
-    <!-- ROI RANK -->
-    <div class="card full-width">
-      <h2><span class="tag get">GET</span>/roi/rank — Optimal Investment Strategy</h2>
-      <p class="desc">Rank all nodes by Lives-Saved-Per-Rupee. Takes ~30s (runs 18 hardening simulations).</p>
-      <button onclick="loadRank()">🏆 Rank All Nodes by ROI</button>
-      <span class="spinner" id="spin-rank"></span>
-      <table id="rank-table" style="display:none; margin-top:14px;">
-        <thead>
-          <tr>
-            <th>#</th><th>Node ID</th><th>Name</th><th>Type</th>
-            <th>Lives Saved</th><th>ROI Ratio</th><th>Lives / ₹</th><th>Recommendation</th>
-          </tr>
-        </thead>
-        <tbody id="rank-body"></tbody>
-      </table>
-      <div class="result-box" id="result-rank" style="display:none;"></div>
-    </div>
-
   </div>
-</main>
+
+  <!-- CENTER: Map -->
+  <div class="panel map-panel" style="border:0;">
+    <div id="map"></div>
+    <div class="timeline-bar">
+      <button class="play-btn" id="btn-play" onclick="togglePlay()">▶</button>
+      <div class="t-lbl" id="tb-lbl">00:00</div>
+      <div class="track" id="track" onclick="seekTrack(event)">
+        <div class="track-fill" id="track-fill"></div>
+        <div class="track-thumb" id="track-thumb"></div>
+      </div>
+      <div id="scen-badge" style="font-size:0.7rem; color:var(--dim);">No scenario loaded</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: ROI Panel -->
+  <div class="panel">
+    <div class="ph"><span class="ph-title">Strategic Hardening / ROI</span></div>
+    <div class="pc">
+
+      <div id="roi-display" style="display:none;" class="roi-card">
+        <div class="roi-lpr-label">Lives Saved Per Rupee</div>
+        <div class="roi-lpr" id="roi-lpr">0.0000</div>
+        <div class="roi-grid">
+          <div class="roi-stat">
+            <div class="roi-stat-val" id="roi-lives" style="color:var(--green);">—</div>
+            <div class="roi-stat-lbl">Lives Saved</div>
+          </div>
+          <div class="roi-stat">
+            <div class="roi-stat-val" id="roi-ratio" style="color:var(--blue);">—</div>
+            <div class="roi-stat-lbl">ROI Ratio</div>
+          </div>
+        </div>
+        <div class="roi-rec" id="roi-rec"></div>
+      </div>
+
+      <label>Target Node to Harden</label>
+      <select id="harden-node">
+        <option value="SUB_4">SUB_4 — Fort Kochi Substation (Extreme)</option>
+        <option value="SUB_3">SUB_3 — Vyttila Substation (High)</option>
+        <option value="SUB_1">SUB_1 — Ernakulam Main Substation</option>
+        <option value="HOSP_3">HOSP_3 — Lisie Hospital, Fort Kochi</option>
+        <option value="HOSP_1">HOSP_1 — Ernakulam General Hospital</option>
+        <option value="PUMP_6">PUMP_6 — Mattancherry Pump Station</option>
+        <option value="PUMP_2">PUMP_2 — MG Road Pump Station</option>
+      </select>
+
+      <label>Mitigation Budget (₹ INR)</label>
+      <input type="number" id="harden-cost" value="1000000" />
+
+      <button class="btn" onclick="runROI()">
+        🛡 CALCULATE MITIGATION ROI
+        <div class="spinner" id="sp-roi"></div>
+      </button>
+
+      <div class="divider"></div>
+
+      <div class="ph" style="padding:0; border:0; margin-bottom:8px;">
+        <span class="ph-title">Infrastructure Status</span>
+        <span style="font-size:0.65rem; color:var(--dim);" id="failed-count">18 OPERATIONAL</span>
+      </div>
+      <div id="node-list"></div>
+
+    </div>
+  </div>
+
+</div>
 
 <script>
-  const API = 'http://localhost:8000';
+const API = 'http://localhost:8000';
+let map, markers = {}, polylines = [];
+let chart;
+let currentScenario = null;
+let playHour = 0, isPlaying = false, playTimer = null;
+let allNodes = [];
 
-  // ── API Status Check ──────────────────────────────────────
-  async function checkStatus() {
-    try {
-      const r = await fetch(API + '/');
-      if (r.ok) {
-        document.getElementById('status-dot').classList.add('online');
-        document.getElementById('status-text').textContent = 'API Online · localhost:8000';
+// ── Bootstrap ─────────────────────────────────────────────────
+
+window.addEventListener('load', async () => {
+  initMap();
+  initChart();
+  await ping();
+  await loadGraph();
+  setInterval(ping, 8000);
+});
+
+function log(msg) {
+  const b = document.getElementById('log-box');
+  const ts = new Date().toLocaleTimeString('en-IN', {hour12:false});
+  b.innerHTML += `<span style="color:var(--dim)">[${ts}]</span> ${msg}<br>`;
+  b.scrollTop = b.scrollHeight;
+}
+
+// ── API Status ─────────────────────────────────────────────────
+
+async function ping() {
+  try {
+    const r = await fetch(API+'/');
+    if(r.ok) {
+      document.getElementById('api-dot').className = 'dot on';
+      document.getElementById('api-txt').textContent = 'SYSTEM ONLINE';
+    }
+  } catch {
+    document.getElementById('api-dot').className = 'dot';
+    document.getElementById('api-txt').textContent = 'API OFFLINE';
+  }
+}
+
+// ── Map ────────────────────────────────────────────────────────
+
+function initMap() {
+  map = L.map('map', { zoomControl:false, attributionControl:false })
+         .setView([9.993, 76.3], 13);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    { maxZoom: 18 }).addTo(map);
+
+  // Custom zoom
+  L.control.zoom({ position:'topright' }).addTo(map);
+}
+
+function nodeColor(type) {
+  if(type === 'substation') return '#ef4444';
+  if(type === 'hospital') return '#10b981';
+  return '#3b82f6';
+}
+
+async function loadGraph() {
+  try {
+    const r = await fetch(API+'/graph');
+    const d = await r.json();
+    allNodes = d.nodes;
+
+    // Clear old
+    Object.values(markers).forEach(m=>map.removeLayer(m));
+    polylines.forEach(p=>map.removeLayer(p));
+    markers={}; polylines=[];
+
+    // Draw edges first (z-index below nodes)
+    d.edges.forEach(e => {
+      const src = d.nodes.find(n=>n.id===e.source);
+      const tgt = d.nodes.find(n=>n.id===e.target);
+      if(!src||!tgt) return;
+      const col = e.dependency==='power' ? '#ef4444' : '#3b82f6';
+      const p = L.polyline([[src.lat,src.lon],[tgt.lat,tgt.lon]], {
+        color: col, weight: 1.5, opacity: 0.35, dashArray:'6 4'
+      }).addTo(map);
+      polylines.push(p);
+    });
+
+    // Draw nodes
+    d.nodes.forEach(n => {
+      const col = nodeColor(n.type);
+      const m = L.circleMarker([n.lat, n.lon], {
+        radius: n.type==='hospital' ? 10 : (n.type==='substation' ? 9 : 7),
+        fillColor: col, color:'#fff', weight:1.5, fillOpacity:0.85
+      }).addTo(map);
+
+      m.bindTooltip(
+        `<b>${n.id}</b> · ${n.name}<br>
+         <span style="color:#f59e0b">Impact: ${(n.population_impact/1000).toFixed(0)}k people</span><br>
+         Threshold: ${n.flood_threshold===9999?'∞ (Hardened)':n.flood_threshold+'m'}`,
+        { className:'', sticky:true }
+      );
+      markers[n.id] = m;
+    });
+
+    buildNodeList(d.nodes);
+    log(`Graph loaded: ${d.nodes.length} nodes, ${d.edges.length} edges`);
+  } catch(e) {
+    log('ERROR loading graph: ' + e.message);
+  }
+}
+
+function buildNodeList(nodes) {
+  const container = document.getElementById('node-list');
+  container.innerHTML = '';
+  nodes.forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'node-row';
+    div.id = `nr-${n.id}`;
+    div.innerHTML = `
+      <div class="ndot" id="nd-${n.id}"></div>
+      <div class="node-id">${n.id}</div>
+      <div class="node-name">${n.name.replace(/ (Substation|Pump Station|Hospital)$/,'')}</div>
+      <div class="node-pop">${(n.population_impact/1000).toFixed(0)}k</div>
+      <div class="type-badge type-${n.type}">${n.type==='substation'?'SUB':n.type==='hospital'?'HOSP':'PUMP'}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ── Simulation ─────────────────────────────────────────────────
+
+async function runSimulate() {
+  const btn = document.getElementById('btn-sim');
+  btn.disabled = true;
+  document.getElementById('sp-sim').style.display = 'inline-block';
+  log('Launching ensemble of 100 flood scenarios...');
+
+  try {
+    const r = await fetch(API+'/simulate', { method:'POST' });
+    const d = await r.json();
+    const s = d.summary;
+
+    document.getElementById('s-avg').textContent   = (s.avg_population_impact/1000).toFixed(0)+'K';
+    document.getElementById('s-nodes').textContent = s.avg_failed_nodes;
+    document.getElementById('s-worst').textContent = (s.max_population_impact/1000).toFixed(0)+'K';
+
+    currentScenario = d.top_5_worst_scenarios[0];
+    const sev = currentScenario.severity;
+    document.getElementById('scen-info').innerHTML =
+      `Scenario <b>#${currentScenario.scenario_id}</b>  
+       <span class="sev-badge sev-${sev}">${sev}</span>  
+       <span style="color:var(--dim);">×${currentScenario.peak_multiplier} peak</span>`;
+
+    document.getElementById('scen-badge').innerHTML =
+      `Scenario #${currentScenario.scenario_id} <span class="sev-badge sev-${sev}">${sev}</span>`;
+
+    updateChart(currentScenario);
+    playHour = 0;
+    renderHour(0);
+
+    log(`Simulation complete. Worst: Scenario #${currentScenario.scenario_id} (${sev}) — ${currentScenario.total_population_impact.toLocaleString()} affected`);
+    s.most_vulnerable_nodes.slice(0,3).forEach(n=>log(`  ⚠ ${n.node_id} fails in ${Math.round(n.failure_rate*100)}% of scenarios`));
+
+  } catch(e) { log('ERROR: '+e.message); }
+
+  btn.disabled=false;
+  document.getElementById('sp-sim').style.display='none';
+}
+
+// ── ROI ────────────────────────────────────────────────────────
+
+async function runROI() {
+  const nid  = document.getElementById('harden-node').value;
+  const cost = parseFloat(document.getElementById('harden-cost').value);
+  document.getElementById('sp-roi').style.display = 'inline-block';
+  log(`Calculating ROI: Harden ${nid} for ₹${cost.toLocaleString()}...`);
+
+  try {
+    const r = await fetch(`${API}/harden/${nid}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({cost_rupees: cost})
+    });
+    const d = await r.json();
+    const roi = d.roi;
+
+    document.getElementById('roi-lpr').textContent   = Number(roi.lives_saved_per_rupee).toFixed(4);
+    document.getElementById('roi-lives').textContent = Number(roi.approximate_lives_saved).toLocaleString('en-IN');
+    document.getElementById('roi-ratio').textContent = roi.roi_ratio+'x';
+    document.getElementById('roi-rec').textContent   = roi.recommendation;
+    document.getElementById('roi-display').style.display = 'block';
+
+    log(`ROI Result → ${roi.approximate_lives_saved.toLocaleString()} lives saved. Ratio: ${roi.roi_ratio}x`);
+    log(`Verdict: ${roi.recommendation}`);
+
+    // Re-load graph to reflect hardened state visually
+    await loadGraph();
+  } catch(e) { log('ERROR: '+e.message); }
+
+  document.getElementById('sp-roi').style.display='none';
+}
+
+// ── Playback ────────────────────────────────────────────────────
+
+function renderHour(hour) {
+  playHour = hour;
+  document.getElementById('h-hour').textContent  = String(hour).padStart(2,'0');
+  document.getElementById('tb-lbl').textContent  = String(hour).padStart(2,'0')+':00';
+  document.getElementById('track-fill').style.width  = (hour/24*100)+'%';
+  document.getElementById('track-thumb').style.left  = (hour/24*100)+'%';
+
+  if(!currentScenario) return;
+
+  // Collect all failed nodes up to this hour
+  const failed = new Set();
+  for(let h=0; h<=hour; h++) {
+    (currentScenario.failures_timeline[String(h)]||[]).forEach(id=>failed.add(id));
+  }
+
+  let failCount = 0;
+  allNodes.forEach(n => {
+    const isFailed = failed.has(n.id);
+    if(isFailed) failCount++;
+    const m = markers[n.id];
+    if(!m) return;
+    if(isFailed) {
+      m.setStyle({ fillColor:'#ef4444', fillOpacity:1, radius:12, weight:2, color:'#fca5a5' });
+    } else {
+      const base = nodeColor(n.type);
+      m.setStyle({ fillColor:base, fillOpacity:0.85, radius:n.type==='hospital'?10:n.type==='substation'?9:7, weight:1.5, color:'#fff' });
+    }
+    const dot = document.getElementById('nd-'+n.id);
+    if(dot) dot.className = 'ndot'+(isFailed?' failed':'');
+  });
+
+  document.getElementById('failed-count').textContent =
+    failCount > 0 ? `${failCount} FAILED / ${allNodes.length}` : `${allNodes.length} OPERATIONAL`;
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('btn-play').textContent = isPlaying ? '⏸' : '▶';
+  if(isPlaying) {
+    playTimer = setInterval(()=>{
+      playHour = (playHour >= 24) ? 0 : playHour+1;
+      renderHour(playHour);
+    }, 700);
+  } else {
+    clearInterval(playTimer);
+  }
+}
+
+function seekTrack(e) {
+  if(!currentScenario) { log('Run simulation first.'); return; }
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left)/rect.width));
+  renderHour(Math.round(pct * 24));
+}
+
+// ── Chart ──────────────────────────────────────────────────────
+
+function initChart() {
+  const ctx = document.getElementById('chart-impact').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: Array.from({length:25},(_,i)=>'H'+i),
+      datasets: [{
+        label: 'Population at Risk',
+        data: Array(25).fill(0),
+        borderColor: '#3b82f6',
+        backgroundColor: createGradient(ctx),
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: c=>' '+Number(c.raw).toLocaleString()+' affected' } } },
+      scales: {
+        y: { grid:{ color:'#1f2937' }, ticks:{ color:'#6b7280', font:{size:10}, callback: v => (v/1000)+'K' } },
+        x: { grid:{ display:false }, ticks:{ color:'#6b7280', font:{size:10} } }
       }
-    } catch {
-      document.getElementById('status-text').textContent = 'API Offline — start uvicorn';
     }
+  });
+}
+
+function createGradient(ctx) {
+  const g = ctx.createLinearGradient(0,0,0,150);
+  g.addColorStop(0,'rgba(59,130,246,0.4)');
+  g.addColorStop(1,'rgba(59,130,246,0)');
+  return g;
+}
+
+function updateChart(scenario) {
+  const impacts = Array(25).fill(0);
+  let running = 0;
+  // Build a map of nodeId → population_impact
+  const popMap = {};
+  allNodes.forEach(n => popMap[n.id] = n.population_impact);
+
+  for(let h=0; h<=24; h++) {
+    const failedAtH = scenario.failures_timeline[String(h)] || [];
+    failedAtH.forEach(nid => { running += (popMap[nid]||0); });
+    impacts[h] = running;
   }
-  checkStatus();
-  setInterval(checkStatus, 10000);
-
-  function spin(id, on) {
-    document.getElementById('spin-' + id).style.display = on ? 'inline-block' : 'none';
-  }
-  function fmt(n) { return Number(n).toLocaleString('en-IN'); }
-
-  // ── /simulate ─────────────────────────────────────────────
-  async function runSimulate() {
-    const btn = document.getElementById('btn-simulate');
-    btn.disabled = true; spin('simulate', true);
-    document.getElementById('result-simulate').textContent = 'Running 100 scenarios… (first run ~15s)';
-    try {
-      const r = await fetch(API + '/simulate', { method: 'POST' });
-      const d = await r.json();
-      const s = d.summary;
-
-      document.getElementById('s-avg').textContent   = fmt(s.avg_population_impact);
-      document.getElementById('s-max').textContent   = fmt(s.max_population_impact);
-      document.getElementById('s-nodes').textContent = s.avg_failed_nodes;
-      document.getElementById('s-total').textContent = s.total_scenarios;
-      document.getElementById('sim-stats').style.display = 'grid';
-
-      // Severity bar from top 5 worst
-      const all = d.top_5_worst_scenarios.concat(d.top_5_best_scenarios);
-      const counts = {LOW:0,MODERATE:0,HIGH:0,EXTREME:0};
-      // approximate from worst/best
-      const total = 100;
-      // use summary data if available from worst scenario
-      document.getElementById('sev-low-bar').style.flexBasis  = '29%';
-      document.getElementById('sev-mod-bar').style.flexBasis  = '38%';
-      document.getElementById('sev-high-bar').style.flexBasis = '22%';
-      document.getElementById('sev-ext-bar').style.flexBasis  = '11%';
-      document.getElementById('sev-section').style.display = 'block';
-
-      document.getElementById('result-simulate').textContent = JSON.stringify({
-        worst_scenario: s.worst_scenario,
-        most_vulnerable_nodes: s.most_vulnerable_nodes,
-        avg_pop_impact: s.avg_population_impact
-      }, null, 2);
-    } catch(e) {
-      document.getElementById('result-simulate').textContent = 'Error: ' + e.message;
-    }
-    btn.disabled = false; spin('simulate', false);
-  }
-
-  // ── /harden/{node_id} ────────────────────────────────────
-  async function runHarden() {
-    const node = document.getElementById('harden-node-id').value;
-    const cost = document.getElementById('harden-cost').value;
-    spin('harden', true);
-    document.getElementById('result-harden').textContent = `Hardening ${node} for ₹${fmt(cost)}… (~10s)`;
-    try {
-      const r = await fetch(`${API}/harden/${node}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cost_rupees: parseFloat(cost) })
-      });
-      const d = await r.json();
-      const roi = d.roi;
-
-      document.getElementById('roi-lpr').textContent   = roi.lives_saved_per_rupee.toFixed(4);
-      document.getElementById('roi-lives').textContent = fmt(roi.approximate_lives_saved);
-      document.getElementById('roi-ratio').textContent = roi.roi_ratio + 'x';
-      document.getElementById('roi-rec').textContent   = roi.recommendation;
-      document.getElementById('roi-display').style.display = 'block';
-
-      document.getElementById('result-harden').textContent = JSON.stringify(roi, null, 2);
-    } catch(e) {
-      document.getElementById('result-harden').textContent = 'Error: ' + e.message;
-    }
-    spin('harden', false);
-  }
-
-  // ── /graph ───────────────────────────────────────────────
-  async function loadGraph() {
-    spin('graph', true);
-    try {
-      const r = await fetch(API + '/graph');
-      const d = await r.json();
-      const list = document.getElementById('node-list');
-      list.innerHTML = '';
-      const typeLabel = { substation:'sub', water_pump:'pump', hospital:'hosp' };
-      d.nodes.forEach(n => {
-        const li = document.createElement('li');
-        const type = typeLabel[n.type] || 'pump';
-        li.innerHTML = `
-          <span class="nid">${n.id}</span>
-          <span style="color:#94a3b8;font-size:0.72rem;">${n.name.replace(' Substation','').replace(' Pump Station','').replace(' Hospital','')}</span>
-          <span class="impact">${(n.population_impact/1000).toFixed(0)}k people</span>
-          <span class="badge ${type}">${n.type.replace('_',' ')}</span>
-        `;
-        list.appendChild(li);
-      });
-      document.getElementById('result-graph').style.display = 'none';
-    } catch(e) {
-      document.getElementById('result-graph').style.display = 'block';
-      document.getElementById('result-graph').textContent = 'Error: ' + e.message;
-    }
-    spin('graph', false);
-  }
-
-  // ── /scenarios (timeline) ────────────────────────────────
-  async function loadTimeline() {
-    const sid = document.getElementById('scenario-id').value;
-    spin('timeline', true);
-    document.getElementById('result-timeline').textContent = 'Loading...';
-    try {
-      const r = await fetch(API + '/scenarios');
-      const d = await r.json();
-      const scenario = d.scenarios.find(s => s.scenario_id == sid);
-      if (!scenario) { document.getElementById('result-timeline').textContent = 'Scenario not found.'; return; }
-
-      const cells = document.getElementById('timeline-cells');
-      cells.innerHTML = '';
-      for (let h = 0; h <= 24; h++) {
-        const failed = scenario.failures_timeline[String(h)] || [];
-        const cell = document.createElement('div');
-        cell.className = 'hour-cell ' + (failed.length ? 'hour-danger' : 'hour-safe');
-        cell.title = failed.length ? `H${h}: ${failed.join(', ')}` : `H${h}: safe`;
-        cell.textContent = `H${h}\n${failed.length ? '⚠' : '✓'}`;
-        cells.appendChild(cell);
-      }
-      document.getElementById('timeline-display').style.display = 'block';
-      document.getElementById('result-timeline').textContent = JSON.stringify({
-        scenario_id: scenario.scenario_id,
-        severity: scenario.severity,
-        peak_multiplier: scenario.peak_multiplier,
-        failed_nodes: scenario.failed_nodes,
-        total_population_impact: scenario.total_population_impact,
-        failures_timeline: scenario.failures_timeline
-      }, null, 2);
-    } catch(e) {
-      document.getElementById('result-timeline').textContent = 'Error: ' + e.message;
-    }
-    spin('timeline', false);
-  }
-
-  // ── /roi/rank ─────────────────────────────────────────────
-  async function loadRank() {
-    spin('rank', true);
-    document.getElementById('result-rank').style.display = 'block';
-    document.getElementById('result-rank').textContent = 'Ranking all nodes… (~30s)';
-    document.getElementById('rank-table').style.display = 'none';
-    try {
-      const r = await fetch(API + '/roi/rank');
-      const d = await r.json();
-      const tbody = document.getElementById('rank-body');
-      tbody.innerHTML = '';
-      d.top_10_by_roi.forEach((n, i) => {
-        const tr = document.createElement('tr');
-        const lpr = n.lives_saved_per_rupee === 1e18 ? '∞' : n.lives_saved_per_rupee.toFixed(4);
-        tr.innerHTML = `
-          <td style="color:#64748b">${i+1}</td>
-          <td style="color:#60a5fa;font-family:monospace;font-weight:600;">${n.node_id}</td>
-          <td style="color:#e2e8f0">${n.node_name}</td>
-          <td style="color:#94a3b8">${n.node_type.replace('_',' ')}</td>
-          <td style="color:#f59e0b;font-weight:700;">${fmt(n.approximate_lives_saved)}</td>
-          <td style="color:#60a5fa;">${n.roi_ratio}x</td>
-          <td style="color:#4ade80;font-weight:700;">${lpr}</td>
-          <td style="color:#94a3b8;font-size:0.72rem;">${n.recommendation.split('—')[0]}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-      document.getElementById('rank-table').style.display = 'table';
-      document.getElementById('result-rank').style.display = 'none';
-    } catch(e) {
-      document.getElementById('result-rank').textContent = 'Error: ' + e.message;
-    }
-    spin('rank', false);
-  }
-
-  // Auto-load graph on page load
-  window.addEventListener('load', () => setTimeout(loadGraph, 800));
+  chart.data.datasets[0].data = impacts;
+  chart.update();
+}
 </script>
 </body>
 </html>

@@ -142,13 +142,26 @@ class DependencyGraph:
 
     def to_dict(self) -> dict:
         """Serialize graph to JSON-safe dict for API responses."""
+
+        def _sanitize(v):
+            """Convert non-JSON-safe floats (inf, nan) to safe values."""
+            if isinstance(v, float):
+                if v == float("inf"):
+                    return 9999.0   # sentinel: hardened / "infinity"
+                if v != v:          # NaN check
+                    return 0.0
+            return v
+
         nodes = []
         for nid, attrs in self.graph.nodes(data=True):
-            nodes.append({"id": nid, **attrs})
+            safe_attrs = {k: _sanitize(val) for k, val in attrs.items()}
+            safe_attrs["hardened"] = nid in self._hardened
+            nodes.append({"id": nid, **safe_attrs})
 
         edges = []
         for src, tgt, attrs in self.graph.edges(data=True):
-            edges.append({"source": src, "target": tgt, **attrs})
+            safe_attrs = {k: _sanitize(val) for k, val in attrs.items()}
+            edges.append({"source": src, "target": tgt, **safe_attrs})
 
         return {
             "nodes": nodes,
