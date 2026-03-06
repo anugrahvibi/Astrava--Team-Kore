@@ -21,6 +21,7 @@ from src.models.cascade_propagator import CascadePropagator
 from src.models.roi_calculator import ROICalculator
 from src.models.lstm_predictor import LSTMFloodPredictor
 from src.models.action_router import ActionRouter
+from src.models.graph_analytics import GraphAnalytics
 
 # ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -303,6 +304,29 @@ def allocate_budget(budget_inr: float = 5_000_000):
         "status": "success",
         "budget_analysis": optimization_result,
         "message": f"Optimal plan generated for ₹{budget_inr:,.0f} budget."
+    }
+
+
+@app.get("/analytics/vulnerability-map", tags=["Network Science & Singularity Detection"])
+def get_structural_vulnerabilities():
+    """
+    Advanced Network Science Engine.
+    Exposes the 'Structural Singularities' of Kochi by calculating 
+    Betweenness Centrality & PageRank across the infrastructure graph.
+    
+    Identifies the EXACT bottlenecks where a single failure will 
+    trigger a total systemic collapse (Singularity Points).
+    """
+    dg, gen, scenarios, baseline_results = _get_pipeline()
+    analytics = GraphAnalytics(dg.graph)
+    analysis_data = analytics.calculate_vulnerabilities()
+    recommendations = analytics.get_bottleneck_recommendations()
+    
+    return {
+        "status": "success",
+        "singularity_analysis": analysis_data,
+        "tactical_recommendations": recommendations,
+        "demonstration_logic": "Centrality-based detection of non-linear cascade triggers (Structural Singularities)."
     }
 
 

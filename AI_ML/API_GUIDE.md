@@ -227,6 +227,18 @@ const data = await res.json();
 //    recommended_hardening_plan: [{ node_id, lives_saved, cost_inr }, ...] }
 ```
 
+## VII. Network Science & Singularity Detection (Structural Vulnerability)
+
+### 17. Structural Vulnerability Map
+```js
+// GET /analytics/vulnerability-map
+const res = await fetch(`${API}/analytics/vulnerability-map`);
+const data = await res.json();
+// data.singularity_analysis.top_singularities -> [{ node_id, name, singularity_index, scores: { bottleneck_centrality, influence_pagerank } }, ...]
+// data.tactical_recommendations -> ["CRITICAL: Substation 4 is a high-centrality singularity...", ...]
+```
+**Why this matters:** These nodes are the "Structural Singularities." If they fail, they trigger the most massive non-linear cascades across the entire city's infrastructure.
+
 ---
 
 ## Node Reference (Updated)
