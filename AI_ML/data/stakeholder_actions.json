@@ -1,0 +1,204 @@
+{
+    "stakeholder_actions": {
+        "dam_operator": {
+            "role": "Dam / Reservoir Operator",
+            "authority": "CWC (Central Water Commission)",
+            "RED": [
+                {
+                    "priority": 1,
+                    "action": "Initiate controlled release protocol — regulate Idukki outflow to stay below 3,000 cumecs as per CWC circular CWC/DM/2018-19.",
+                    "deadline_hours": 2,
+                    "source": "CWC Flood Forecasting Manual, Section 4.3"
+                },
+                {
+                    "priority": 2,
+                    "action": "Notify downstream Periyar River monitoring stations at Aluva and Ernakulam of expected surge timing.",
+                    "deadline_hours": 1,
+                    "source": "Kerala State Disaster Management Authority SOP 2019"
+                },
+                {
+                    "priority": 3,
+                    "action": "Activate Emergency Action Plan (EAP) — Idukki Dam. Alert KSEB and State Disaster Management Control Room.",
+                    "deadline_hours": 0.5,
+                    "source": "NDMA Dam Break Analysis Guidelines 2016"
+                }
+            ],
+            "ORANGE": [
+                {
+                    "priority": 1,
+                    "action": "Monitor inflow rate at 30-minute intervals. Prepare controlled release if inflow exceeds 2,000 cumecs.",
+                    "deadline_hours": 4,
+                    "source": "CWC Reservoir Operation Manual"
+                }
+            ],
+            "GREEN": [
+                {
+                    "priority": 1,
+                    "action": "Maintain standard monitoring schedule. Log water level readings every 6 hours.",
+                    "deadline_hours": 24,
+                    "source": "CWC Standard Operating Procedure"
+                }
+            ]
+        },
+        "ndrf": {
+            "role": "National Disaster Response Force",
+            "authority": "NDMA / Ministry of Home Affairs",
+            "RED": [
+                {
+                    "priority": 1,
+                    "action": "Deploy NDRF teams to Fort Kochi and Vyttila — pre-position rescue boats at Thevara Ferry Wharf and Marine Drive embankment.",
+                    "deadline_hours": 3,
+                    "source": "NDMA Standard Operating Procedures for Flood Response 2020"
+                },
+                {
+                    "priority": 2,
+                    "action": "Activate medical response units — coordinate with Ernakulam General Hospital and Amrita Institute for emergency triage.",
+                    "deadline_hours": 4,
+                    "source": "NDRF Field Manual, Chapter 7: Medical First Response"
+                },
+                {
+                    "priority": 3,
+                    "action": "Establish Incident Command Post at Willingdon Island — coordinate air and water rescue corridors.",
+                    "deadline_hours": 2,
+                    "source": "Kerala State Emergency Operations Centre Protocol 2018"
+                }
+            ],
+            "ORANGE": [
+                {
+                    "priority": 1,
+                    "action": "Place NDRF teams on 2-hour standby. Conduct rapid vulnerability assessment of low-lying coastal wards.",
+                    "deadline_hours": 6,
+                    "source": "NDMA Flood Prepositioning Guidelines"
+                }
+            ],
+            "GREEN": [
+                {
+                    "priority": 1,
+                    "action": "Maintain routine readiness. Update flood vulnerability maps for Fort Kochi and Vyttila wards.",
+                    "deadline_hours": 24,
+                    "source": "NDRF Standard Readiness Protocol"
+                }
+            ]
+        },
+        "district_collector": {
+            "role": "District Collector, Ernakulam",
+            "authority": "Revenue & Disaster Management Dept, Kerala",
+            "RED": [
+                {
+                    "priority": 1,
+                    "action": "Issue Section 144 CrPC evacuation order for wards below 1m elevation — Fort Kochi, Mattancherry, Thevara. Activate all 47 flood relief camps.",
+                    "deadline_hours": 2,
+                    "source": "Kerala DDMP 2022, Chapter 6: Evacuation Procedures"
+                },
+                {
+                    "priority": 2,
+                    "action": "Requisition KSRTC buses (minimum 50) for mass evacuation. Coordinate with Railway Division for special evacuation trains from Ernakulam South.",
+                    "deadline_hours": 3,
+                    "source": "Kerala State Disaster Management Plan 2016"
+                },
+                {
+                    "priority": 3,
+                    "action": "Declare District Disaster Alert — release emergency funds under SDRF. Notify State EOC, Revenue Commissioner, and Chief Minister Office.",
+                    "deadline_hours": 1,
+                    "source": "SDRF Guidelines, MHA Circular 2015"
+                }
+            ],
+            "ORANGE": [
+                {
+                    "priority": 1,
+                    "action": "Open pre-identified relief camps at Maharajas College and Ernakulam Town Hall. Alert village officers in flood-prone panchayats.",
+                    "deadline_hours": 6,
+                    "source": "Kerala DDMP 2022"
+                }
+            ],
+            "GREEN": [
+                {
+                    "priority": 1,
+                    "action": "Review ward-level flood vulnerability list. Confirm contact list for rapid alert dissemination.",
+                    "deadline_hours": 24,
+                    "source": "Standard Readiness Protocol"
+                }
+            ]
+        },
+        "highway_department": {
+            "role": "Kerala PWD / National Highways Authority",
+            "authority": "Public Works Department, Kerala",
+            "RED": [
+                {
+                    "priority": 1,
+                    "action": "Immediately close NH66 between Vyttila and Aroor at water depth >0.3m. Deploy barricades and alternate route signage via Seaport-Airport Road.",
+                    "deadline_hours": 1,
+                    "source": "NHAI Flood Contingency Plan 2019"
+                },
+                {
+                    "priority": 2,
+                    "action": "Inspect and close Vyttila flyover if water level in Vembanad backwaters exceeds 0.8m MSL. Divert to Kundannoor bridge.",
+                    "deadline_hours": 2,
+                    "source": "PWD Kerala Emergency Road Closure Protocol"
+                },
+                {
+                    "priority": 3,
+                    "action": "Deploy JCBs and pumps at 5 critical underpasses — Palarivattom, Edapally, CSEZ, Kakkanad, Vytilla Hub.",
+                    "deadline_hours": 3,
+                    "source": "Kochi Corporation Flood Management Plan 2020"
+                }
+            ],
+            "ORANGE": [
+                {
+                    "priority": 1,
+                    "action": "Monitor NH66 water sensors every 30 minutes. Pre-position road closure equipment at Vyttila and Aroor junctions.",
+                    "deadline_hours": 6,
+                    "source": "PWD Monitoring Protocol"
+                }
+            ],
+            "GREEN": [
+                {
+                    "priority": 1,
+                    "action": "Confirm functionality of all drain clearance systems on NH66 and SH1. Log pavement condition status.",
+                    "deadline_hours": 24,
+                    "source": "Standard Maintenance Protocol"
+                }
+            ]
+        },
+        "public": {
+            "role": "General Public",
+            "authority": "Kerala Police / DEOC",
+            "RED": [
+                {
+                    "priority": 1,
+                    "action": "EVACUATE IMMEDIATELY if in Fort Kochi, Mattancherry, Thevara, or Vyttila. Move to nearest relief camp. Do NOT wait.",
+                    "deadline_hours": 2,
+                    "source": "Kerala DDMP Public Advisory Template"
+                },
+                {
+                    "priority": 2,
+                    "action": "DO NOT attempt to cross flooded roads or underpasses. 15cm of fast-moving water can knock you off your feet. 30cm can sweep a vehicle.",
+                    "deadline_hours": 0,
+                    "source": "NDMA Public Safety Guidelines"
+                },
+                {
+                    "priority": 3,
+                    "action": "Switch off electricity at mains before evacuating. Do not use lifts. Keep emergency numbers saved: DEOC 1077, NDRF 9446600421.",
+                    "deadline_hours": 1,
+                    "source": "NDMA Household Preparedness Checklist"
+                }
+            ],
+            "ORANGE": [
+                {
+                    "priority": 1,
+                    "action": "Pack 72-hour emergency kit (documents, medicines, water, food). Monitor DEOC alerts via CM Distress App and Akashavani FM 101.9 MHz.",
+                    "deadline_hours": 12,
+                    "source": "Kerala DDMP Public Preparedness Advisory"
+                }
+            ],
+            "GREEN": [
+                {
+                    "priority": 1,
+                    "action": "Stay informed. Download Kerala Disaster Management App. Know your nearest relief camp location.",
+                    "deadline_hours": 48,
+                    "source": "Standard Public Awareness Advisory"
+                }
+            ]
+        }
+    }
+}

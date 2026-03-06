@@ -19,6 +19,8 @@ from src.models.dependency_graph import DependencyGraph
 from src.models.hazard_generator import HazardGenerator
 from src.models.cascade_propagator import CascadePropagator
 from src.models.roi_calculator import ROICalculator
+from src.models.lstm_predictor import LSTMFloodPredictor
+from src.models.action_router import ActionRouter
 
 # ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +45,29 @@ _hazard_gen: HazardGenerator | None = None
 _scenarios: list[dict] | None = None
 _baseline_results: list[dict] | None = None
 _original_thresholds: dict = {}
+
+# New: LSTM + Action Router singletons
+_lstm_predictor: LSTMFloodPredictor | None = None
+_action_router: ActionRouter | None = None
+
+
+def _get_lstm():
+    """Lazy-initialize the LSTM predictor."""
+    global _lstm_predictor
+    if _lstm_predictor is None:
+        print("[API] Training LSTM flood predictor...")
+        _lstm_predictor = LSTMFloodPredictor()
+        acc = _lstm_predictor.build_and_train()
+        print(f"[API] LSTM ready. Accuracy: {acc:.1%}")
+    return _lstm_predictor
+
+
+def _get_router():
+    """Lazy-initialize the action router."""
+    global _action_router
+    if _action_router is None:
+        _action_router = ActionRouter()
+    return _action_router
 
 
 def _get_pipeline():
@@ -420,3 +445,94 @@ def impact_zones(hour: int, scenario_id: int = 1):
         "features": features,
     }
 
+
+
+# -- Flood Prediction Endpoints (PRD Component 1) ----------------------------
+
+@app.get('/predict/zones', tags=['Flood Prediction'])
+def predict_all_zones():
+    lstm = _get_lstm()
+    results = lstm.predict_all_zones()
+    red_count = sum(1 for r in results if r['alert_level'] == 'RED')
+    orange_count = sum(1 for r in results if r['alert_level'] == 'ORANGE')
+    return {
+        'status': 'success',
+        'total_zones': len(results),
+        'red_zones': red_count,
+        'orange_zones': orange_count,
+        'overall_threat_level': 'RED' if red_count > 0 else ('ORANGE' if orange_count > 0 else 'GREEN'),
+        'predictions': results,
+    }
+
+
+@app.get('/predict/zone/{zone_id}', tags=['Flood Prediction'])
+def predict_single_zone(zone_id: str, scenario: str = 'current'):
+    lstm = _get_lstm()
+    valid_zones = ['ZONE_FORT_KOCHI','ZONE_VYTTILA','ZONE_ERNAKULAM','ZONE_KALAMASSERY','ZONE_ALUVA','ZONE_KAKKANAD']
+    if zone_id not in valid_zones:
+        raise HTTPException(status_code=404, detail=f'Zone not found. Valid: {valid_zones}')
+    if scenario in ('2018_peak', 'moderate'):
+        all_preds = lstm.simulate_scenario(scenario)
+        pred = next((p for p in all_preds if p['zone_id'] == zone_id), None)
+    else:
+        pred = lstm.predict_zone(zone_id)
+    return {'status': 'success', 'prediction': pred}
+
+
+@app.post('/alerts/trigger', tags=['Actionability Layer'])
+def trigger_alert(zone_id: str, scenario: str = 'current'):
+    lstm = _get_lstm()
+    router = _get_router()
+    valid_zones = ['ZONE_FORT_KOCHI','ZONE_VYTTILA','ZONE_ERNAKULAM','ZONE_KALAMASSERY','ZONE_ALUVA','ZONE_KAKKANAD']
+    if zone_id not in valid_zones:
+        raise HTTPException(status_code=404, detail='Zone not found.')
+    if scenario in ('2018_peak', 'moderate'):
+        all_preds = lstm.simulate_scenario(scenario)
+        pred = next((p for p in all_preds if p['zone_id'] == zone_id), None)
+    else:
+        pred = lstm.predict_zone(zone_id)
+    if pred is None:
+        raise HTTPException(status_code=500, detail='Prediction failed.')
+    action_plan = router.route_alert(
+        zone_id=pred['zone_id'],
+        alert_level=pred['alert_level'],
+        flood_probability=pred['flood_probability'],
+        lead_time_hours=pred['lead_time_hours'],
+        projected_water_level_m=pred['projected_water_level_m'],
+    )
+    return {'status': 'success', 'prediction': pred, 'action_plan': action_plan}
+
+
+@app.get('/alerts/summary', tags=['Actionability Layer'])
+def get_alert_summary(scenario: str = 'current'):
+    lstm = _get_lstm()
+    router = _get_router()
+    if scenario in ('2018_peak', 'moderate'):
+        predictions = lstm.simulate_scenario(scenario)
+    else:
+        predictions = lstm.predict_all_zones()
+    summaries = router.get_all_zone_summaries(predictions)
+    return {'status': 'success', 'scenario': scenario, 'total_zones_alerted': len(summaries), 'zone_summaries': summaries}
+
+
+@app.get('/lead-time', tags=['Flood Prediction'])
+def get_lead_times(scenario: str = 'current'):
+    import datetime as dt
+    lstm = _get_lstm()
+    if scenario in ('2018_peak', 'moderate'):
+        predictions = lstm.simulate_scenario(scenario)
+    else:
+        predictions = lstm.predict_all_zones()
+    stakeholder_deadlines = {'dam_operator': 2, 'ndrf': 3, 'district_collector': 3, 'highway_department': 4, 'public': 6}
+    tickers = []
+    for pred in predictions:
+        lead = pred['lead_time_hours']
+        tickers.append({
+            'zone_id': pred['zone_id'],
+            'alert_level': pred['alert_level'],
+            'flood_probability_pct': round(pred['flood_probability'] * 100, 1),
+            'hours_until_peak': lead,
+            'stakeholder_action_windows': {s: max(lead - w, 0) for s, w in stakeholder_deadlines.items()},
+            'status': 'CRITICAL' if lead <= 4 else ('URGENT' if lead <= 8 else 'MONITORING'),
+        })
+    return {'status': 'success', 'scenario': scenario, 'generated_at': dt.datetime.now().isoformat(), 'lead_time_tickers': tickers}
