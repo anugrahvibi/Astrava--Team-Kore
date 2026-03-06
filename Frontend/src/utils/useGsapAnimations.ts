@@ -20,7 +20,7 @@ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | nu
         button.addEventListener('mouseenter', () => {
           gsap.to(button, {
             scale: 1.05,
-            duration: 0.3,
+            duration: 0.2,
             ease: 'power2.out',
             boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)'
           });
@@ -29,7 +29,7 @@ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | nu
         button.addEventListener('mouseleave', () => {
           gsap.to(button, {
             scale: 1,
-            duration: 0.3,
+            duration: 0.2,
             ease: 'power2.inOut',
             boxShadow: 'none'
           });
@@ -54,10 +54,10 @@ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | nu
             toggleActions: 'play none none none',
             scroller: containerRef.current || window
           },
-          y: 30,
+          y: 20,
           opacity: 0,
-          duration: 0.8,
-          delay: index * 0.05,
+          duration: 0.5,
+          delay: index * 0.03,
           ease: 'power3.out'
         });
       });
@@ -66,9 +66,9 @@ export const useGsapAnimations = (containerRef: React.RefObject<HTMLElement | nu
       const header = containerRef.current?.querySelector('header');
       if (header) {
         gsap.from(header, {
-          y: -20,
+          y: -15,
           opacity: 0,
-          duration: 1,
+          duration: 0.6,
           ease: 'power2.out'
         });
       }
