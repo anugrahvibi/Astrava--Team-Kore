@@ -21,6 +21,7 @@ from src.models.cascade_propagator import CascadePropagator
 from src.models.roi_calculator import ROICalculator
 from src.models.lstm_predictor import LSTMFloodPredictor
 from src.models.action_router import ActionRouter
+from src.models.graph_analytics import GraphAnalytics
 
 # ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -306,6 +307,29 @@ def allocate_budget(budget_inr: float = 5_000_000):
     }
 
 
+@app.get("/analytics/vulnerability-map", tags=["Network Science & Singularity Detection"])
+def get_structural_vulnerabilities():
+    """
+    Advanced Network Science Engine.
+    Exposes the 'Structural Singularities' of Kochi by calculating 
+    Betweenness Centrality & PageRank across the infrastructure graph.
+    
+    Identifies the EXACT bottlenecks where a single failure will 
+    trigger a total systemic collapse (Singularity Points).
+    """
+    dg, gen, scenarios, baseline_results = _get_pipeline()
+    analytics = GraphAnalytics(dg.graph)
+    analysis_data = analytics.calculate_vulnerabilities()
+    recommendations = analytics.get_bottleneck_recommendations()
+    
+    return {
+        "status": "success",
+        "singularity_analysis": analysis_data,
+        "tactical_recommendations": recommendations,
+        "demonstration_logic": "Centrality-based detection of non-linear cascade triggers (Structural Singularities)."
+    }
+
+
 # ─── 3D Map Endpoints ─────────────────────────────────────────────────────────
 
 @app.get("/flood-grid/{hour}", tags=["3D Map"])
@@ -534,7 +558,7 @@ def predict_single_zone(zone_id: str, scenario: str = 'current'):
 
 
 @app.post('/alerts/trigger', tags=['Actionability Layer'])
-def trigger_alert(zone_id: str, scenario: str = 'current'):
+def trigger_alert(zone_id: str, scenario: str = 'current', reservoir_pct: float = None):
     lstm = _get_lstm()
     router = _get_router()
     valid_zones = ['ZONE_FORT_KOCHI','ZONE_VYTTILA','ZONE_ERNAKULAM','ZONE_KALAMASSERY','ZONE_ALUVA','ZONE_KAKKANAD']
@@ -553,6 +577,7 @@ def trigger_alert(zone_id: str, scenario: str = 'current'):
         flood_probability=pred['flood_probability'],
         lead_time_hours=pred['lead_time_hours'],
         projected_water_level_m=pred['projected_water_level_m'],
+        reservoir_pct=reservoir_pct
     )
     return {'status': 'success', 'prediction': pred, 'action_plan': action_plan}
 
