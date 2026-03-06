@@ -225,3 +225,198 @@ def rank_roi():
         "total_nodes_ranked": len(rankings),
         "top_10_by_roi": rankings[:10],
     }
+
+
+# ─── 3D Map Endpoints ─────────────────────────────────────────────────────────
+
+@app.get("/flood-grid/{hour}", tags=["3D Map"])
+def flood_grid(hour: int, multiplier: float = 1.0):
+    """
+    Returns a GeoJSON FeatureCollection of flood depths across Kochi at a given hour.
+    Used by the frontend to render the animated water layer on the 3D map.
+
+    Args:
+        hour: Simulation hour (0-24)
+        multiplier: Flood peak multiplier (0.8-1.2). Defaults to 1.0 (2018 baseline).
+    """
+    if hour < 0 or hour > 24:
+        raise HTTPException(status_code=400, detail="Hour must be between 0 and 24")
+
+    dg, gen, _, _ = _get_pipeline()
+
+    # Max depth in the dataset for normalisation
+    max_depth = float(gen.flood_map["base_depth_m"].max()) * 1.2
+
+    features = []
+    for _, row in gen.flood_map.iterrows():
+        depth = gen.depth_at_hour(float(row["base_depth_m"]), hour, multiplier)
+        intensity = round(min(depth / max_depth, 1.0), 4) if max_depth > 0 else 0.0
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [round(float(row["lon"]), 6), round(float(row["lat"]), 6)]
+            },
+            "properties": {
+                "depth_m": round(depth, 4),
+                "intensity": intensity,
+            }
+        })
+
+    return {
+        "hour": hour,
+        "multiplier": multiplier,
+        "peak_hour": 12,
+        "type": "FeatureCollection",
+        "features": features,
+    }
+
+
+@app.get("/scenario/{scenario_id}/hourly-states", tags=["3D Map"])
+def scenario_hourly_states(scenario_id: int):
+    """
+    Returns complete node + edge status for every hour (0-24) in a given scenario.
+    Used by the frontend to animate infrastructure pins and cascade dependency lines.
+
+    Each hour contains:
+      - nodes: {node_id: {status, depth_m, threshold, population_impact}}
+      - edges: {source__target: 'ACTIVE' | 'BROKEN'}
+      - total_failed, population_impacted
+    """
+    dg, gen, scenarios, results = _get_pipeline()
+
+    scenario = next((r for r in results if r["scenario_id"] == scenario_id), None)
+    if not scenario:
+        raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
+
+    mult = scenario["peak_multiplier"]
+    graph = dg.graph
+    failed_at = {}  # node_id → hour first failed
+
+    # Replay the timeline to determine exact failure hours
+    for h_str, nodes in scenario["failures_timeline"].items():
+        h = int(h_str)
+        for nid in nodes:
+            if nid not in failed_at:
+                failed_at[nid] = h
+
+    hourly_states = {}
+    for hour in range(25):
+        node_states = {}
+        failed_this_hour = set(nid for nid, fh in failed_at.items() if fh <= hour)
+
+        for nid, attrs in graph.nodes(data=True):
+            depth = gen.get_node_depth_at_hour(attrs["lat"], attrs["lon"], hour, mult)
+            node_states[nid] = {
+                "status": "FAILED" if nid in failed_this_hour else "OPERATIONAL",
+                "depth_m": round(depth, 4),
+                "threshold": attrs["flood_threshold"] if attrs["flood_threshold"] < 999 else None,
+                "population_impact": attrs["population_impact"],
+                "type": attrs["type"],
+                "name": attrs["name"],
+                "lat": attrs["lat"],
+                "lon": attrs["lon"],
+            }
+
+        edge_states = {}
+        for src, tgt, edata in graph.edges(data=True):
+            key = f"{src}__{tgt}"
+            src_failed = src in failed_this_hour
+            edge_states[key] = {
+                "status": "BROKEN" if src_failed else "ACTIVE",
+                "dependency": edata["dependency"],
+                "failure_probability": edata.get("failure_probability", 0),
+            }
+
+        total_failed = len(failed_this_hour)
+        pop_impacted = sum(
+            graph.nodes[nid]["population_impact"]
+            for nid in failed_this_hour
+            if nid in graph.nodes
+        )
+
+        hourly_states[str(hour)] = {
+            "nodes": node_states,
+            "edges": edge_states,
+            "total_failed": total_failed,
+            "population_impacted": pop_impacted,
+        }
+
+    return {
+        "scenario_id": scenario_id,
+        "severity": scenario["severity"],
+        "peak_multiplier": mult,
+        "total_hours": 25,
+        "hourly_states": hourly_states,
+    }
+
+
+@app.get("/impact-zones/{hour}", tags=["3D Map"])
+def impact_zones(hour: int, scenario_id: int = 1):
+    """
+    Returns a GeoJSON FeatureCollection of impact circles around failed nodes at a given hour.
+    Used by the frontend to render the population heatmap overlay on the 3D map.
+
+    Circle radius is proportional to population_impact.
+    Color intensity = higher impact → darker red.
+    """
+    if hour < 0 or hour > 24:
+        raise HTTPException(status_code=400, detail="Hour must be between 0 and 24")
+
+    dg, gen, scenarios, results = _get_pipeline()
+
+    scenario = next((r for r in results if r["scenario_id"] == scenario_id), None)
+    if not scenario:
+        raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
+
+    graph = dg.graph
+    failed_at = {}
+    for h_str, nodes in scenario["failures_timeline"].items():
+        h = int(h_str)
+        for nid in nodes:
+            if nid not in failed_at:
+                failed_at[nid] = h
+
+    failed_now = set(nid for nid, fh in failed_at.items() if fh <= hour)
+    max_impact = max((graph.nodes[nid]["population_impact"] for nid in graph.nodes), default=1)
+
+    features = []
+    for nid, attrs in graph.nodes(data=True):
+        is_failed = nid in failed_now
+        pop = attrs["population_impact"]
+        # Radius scaled: 500m minimum for operational, up to 1500m for max-impact failed node
+        radius_m = int(500 + (pop / max_impact) * 1000) if is_failed else 300
+
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [round(attrs["lon"], 6), round(attrs["lat"], 6)]
+            },
+            "properties": {
+                "node_id": nid,
+                "node_name": attrs["name"],
+                "type": attrs["type"],
+                "status": "FAILED" if is_failed else "OPERATIONAL",
+                "population_impact": pop,
+                "impact_ratio": round(pop / max_impact, 4),
+                "radius_m": radius_m,
+                "failed_at_hour": failed_at.get(nid),
+            }
+        })
+
+    total_impacted = sum(
+        graph.nodes[nid]["population_impact"]
+        for nid in failed_now
+        if nid in graph.nodes
+    )
+
+    return {
+        "hour": hour,
+        "scenario_id": scenario_id,
+        "total_failed_nodes": len(failed_now),
+        "total_population_impacted": total_impacted,
+        "type": "FeatureCollection",
+        "features": features,
+    }
+
