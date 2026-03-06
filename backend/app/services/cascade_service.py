@@ -9,9 +9,37 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import InfrastructureNode, Zone, Prediction
 from app.schemas import CascadeFailureItem, CascadeOut
+from app.services.ml_service_client import ml_client
 
 
 class CascadeService:
+    @staticmethod
+    async def get_ml_simulation_results() -> Optional[dict]:
+        """Get simulation results from AI_ML service."""
+        try:
+            return await ml_client.run_simulation()
+        except Exception as e:
+            print(f"ML simulation failed: {e}")
+            return None
+
+    @staticmethod
+    async def get_ml_scenarios() -> Optional[dict]:
+        """Get scenarios from AI_ML service."""
+        try:
+            return await ml_client.get_scenarios()
+        except Exception as e:
+            print(f"ML scenarios failed: {e}")
+            return None
+
+    @staticmethod
+    async def get_ml_graph() -> Optional[dict]:
+        """Get infrastructure graph from AI_ML service."""
+        try:
+            return await ml_client.get_graph()
+        except Exception as e:
+            print(f"ML graph failed: {e}")
+            return None
+
     @staticmethod
     async def predict_impact(db: AsyncSession, zone_id: str, projected_level: float) -> CascadeOut:
         """Calculate infrastructure failures for a zone's projected water level."""
