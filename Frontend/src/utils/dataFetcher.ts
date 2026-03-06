@@ -62,14 +62,10 @@ export interface SensorReading {
 
 export async function fetchZones(): Promise<any> {
   try {
-    const res = await fetch('/api/v1/zones');
-    if (res.ok) {
-      const data = await res.json();
-      // Format backend response to match expected geojson-ish or list structure
-      return data;
-    }
+    const res = await fetch('/api/graph'); // Infrastructure graph for map
+    if (res.ok) return await res.json();
   } catch (e) {
-    console.warn("Backend not available, falling back to static zones", e);
+    console.warn("Backend graph fetch failed", e);
   }
   const res = await fetch('/data/zones.geojson');
   return res.json();
@@ -77,17 +73,10 @@ export async function fetchZones(): Promise<any> {
 
 export async function fetchPredictions(): Promise<Prediction[]> {
   try {
-    const res = await fetch('/api/v1/zones');
+    const res = await fetch('/api/predict/zones');
     if (res.ok) {
       const data = await res.json();
-      return data.map((z: any) => ({
-        zone_id: z.id,
-        zone_name: z.name,
-        flood_probability: z.flood_probability,
-        projected_water_level: z.projected_water_level_m,
-        lead_time_hours: z.lead_time_hrs,
-        alert_level: z.current_alert_level as 'GREEN' | 'AMBER' | 'RED'
-      }));
+      return data.predictions;
     }
   } catch (e) {
     console.warn("Backend predictions not available", e);
@@ -96,14 +85,43 @@ export async function fetchPredictions(): Promise<Prediction[]> {
 }
 
 export async function fetchInfrastructure(): Promise<InfrastructureData> {
+  try {
+    const res = await fetch('/api/graph');
+    if (res.ok) {
+       const data = await res.json();
+       return { nodes: Object.values(data.nodes || {}), edges: data.edges || [] };
+    }
+  } catch (e) {}
   const res = await fetch('/data/infrastructure_vulnerability.json');
   return res.json();
 }
 
 export async function fetchActiveAlerts(role: string): Promise<Alert[]> {
   try {
-    const res = await fetch(`/api/v1/alerts/active?role=${encodeURIComponent(role)}`);
-    if (res.ok) return await res.json();
+    const res = await fetch(`/api/alerts/summary`);
+    if (res.ok) {
+       const data = await res.json();
+       // Filter zone summaries for the specific department "role"
+       const allPlans: Alert[] = [];
+       data.zone_summaries.forEach((zone: any) => {
+         zone.action_plans.forEach((plan: any) => {
+           if (plan.department === role) {
+              allPlans.push({
+                id: Math.random(), // transient ID
+                zone_id: zone.zone_id,
+                alert_level: plan.alert_level,
+                target_role: plan.department,
+                action_text: plan.action,
+                deadline_hrs: plan.time_window_hours,
+                is_active: true,
+                acknowledged: false,
+                created_at: zone.timestamp
+              });
+           }
+         });
+       });
+       return allPlans;
+    }
   } catch (e) {
     console.warn("Backend alerts not available", e);
   }
@@ -134,41 +152,5 @@ export async function fetchCascadeAnalysis(zoneId: string): Promise<any> {
   return null;
 }
 
-// Mock prediction data since it might not be fully present in the real static files yet
-export function generateMockPredictions(zonesList: any[]): Prediction[] {
-  // If we have real predictions from backend, we might not need this, 
-  // but let's keep it as fallback if zonesList is geojson
-  if (!zonesList || zonesList.length === 0) return [];
-  
-  return zonesList.map((z, i) => {
-    // Handle both GeoJSON features and flat backend objects
-    const props = z.properties || z;
-    const isHighRisk = i % 3 === 0;
-    const isMedium = i % 3 === 1;
-    let alert_level: 'GREEN'|'AMBER'|'RED' = 'GREEN';
-    let prob = Math.random() * 0.3;
-    let waterLevel = Math.random() * 0.5;
-    let leadTime = 24 + Math.floor(Math.random() * 48);
 
-    if (isHighRisk) {
-      alert_level = 'RED';
-      prob = 0.8 + Math.random() * 0.2;
-      waterLevel = 1.0 + Math.random() * 2.0;
-      leadTime = 2 + Math.floor(Math.random() * 10);
-    } else if (isMedium) {
-      alert_level = 'AMBER';
-      prob = 0.4 + Math.random() * 0.3;
-      waterLevel = 0.5 + Math.random() * 0.5;
-      leadTime = 12 + Math.floor(Math.random() * 24);
-    }
-
-    return {
-      zone_id: props.id,
-      zone_name: props.name,
-      flood_probability: props.flood_probability || prob,
-      projected_water_level: props.projected_water_level_m || waterLevel,
-      lead_time_hours: props.lead_time_hrs || leadTime,
-      alert_level: (props.current_alert_level as any) || alert_level
-    };
-  });
-}
+// Predictions are now expected exclusively from the backend AI/ML models.

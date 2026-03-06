@@ -43,11 +43,14 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, 
   return <>{children}</>;
 }
 
+import { HighwayDepartmentDashboard } from './dashboards/HighwayDepartmentDashboard';
+
 function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
-  if (role === 'NDRF Command') return <Navigate to="/ndrf" replace />;
-  if (role === 'Dam Operator') return <Navigate to="/dam" replace />;
-  if (role === 'District Admin') return <Navigate to="/admin" replace />;
+  if (role === 'Dam Controller') return <Navigate to="/dam" replace />;
+  if (role === 'NDRF') return <Navigate to="/ndrf" replace />;
+  if (role === 'District Collector') return <Navigate to="/admin" replace />;
+  if (role === 'Highway Department') return <Navigate to="/highway" replace />;
   if (role === 'Public') return <Navigate to="/public" replace />;
   return <>{children}</>;
 }
@@ -60,9 +63,10 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<AuthRedirect><Login /></AuthRedirect>} />
           <Route path="/signup" element={<AuthRedirect><Signup /></AuthRedirect>} />
-          <Route path="/ndrf" element={<ProtectedRoute allowedRole="NDRF Command"><div className="flex-1 mt-16"><NdrfDashboard /></div></ProtectedRoute>} />
-          <Route path="/dam" element={<ProtectedRoute allowedRole="Dam Operator"><div className="flex-1 mt-16"><DamOperatorDashboard /></div></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute allowedRole="District Admin"><div className="flex-1 mt-16"><DistrictAdminDashboard /></div></ProtectedRoute>} />
+          <Route path="/ndrf" element={<ProtectedRoute allowedRole="NDRF"><div className="flex-1 mt-16"><NdrfDashboard /></div></ProtectedRoute>} />
+          <Route path="/dam" element={<ProtectedRoute allowedRole="Dam Controller"><div className="flex-1 mt-16"><DamOperatorDashboard /></div></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute allowedRole="District Collector"><div className="flex-1 mt-16"><DistrictAdminDashboard /></div></ProtectedRoute>} />
+          <Route path="/highway" element={<ProtectedRoute allowedRole="Highway Department"><div className="flex-1 mt-16"><HighwayDepartmentDashboard /></div></ProtectedRoute>} />
           <Route path="/public" element={<ProtectedRoute allowedRole="Public"><div className="flex-1 mt-16"><PublicPortal /></div></ProtectedRoute>} />
         </Routes>
       </main>

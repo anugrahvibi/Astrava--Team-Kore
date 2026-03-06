@@ -15,9 +15,10 @@ export function Login() {
       // In a real app, role would come back from the server.
       // Here, useAuth will have updated the 'role' state based on the local storage check.
       const userRole = localStorage.getItem('cascade_role');
-      if (userRole === 'NDRF Command') navigate('/ndrf');
-      else if (userRole === 'Dam Operator') navigate('/dam');
-      else if (userRole === 'District Admin') navigate('/admin');
+      if (userRole === 'NDRF') navigate('/ndrf');
+      else if (userRole === 'Dam Controller') navigate('/dam');
+      else if (userRole === 'District Collector') navigate('/admin');
+      else if (userRole === 'Highway Department') navigate('/highway');
       else navigate('/public');
     }
   };

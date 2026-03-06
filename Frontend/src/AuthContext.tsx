@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export type Role = 'NDRF Command' | 'Dam Operator' | 'District Admin' | 'Public' | null;
+export type Role = 'Dam Controller' | 'NDRF' | 'District Collector' | 'Highway Department' | 'Public' | null;
 
 interface AuthContextType {
   role: Role;

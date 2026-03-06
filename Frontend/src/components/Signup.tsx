@@ -15,14 +15,15 @@ export function Signup() {
     e.preventDefault();
     localStorage.removeItem('registered_role');
     if (login(role as Role)) {
-      if (role === 'NDRF Command') navigate('/ndrf');
-      else if (role === 'Dam Operator') navigate('/dam');
-      else if (role === 'District Admin') navigate('/admin');
+      if (role === 'NDRF') navigate('/ndrf');
+      else if (role === 'Dam Controller') navigate('/dam');
+      else if (role === 'District Collector') navigate('/admin');
+      else if (role === 'Highway Department') navigate('/highway');
       else navigate('/public');
     }
   };
 
-  const roles = ['NDRF Command', 'Dam Operator', 'District Admin', 'Public'];
+  const roles = ['Dam Controller', 'NDRF', 'District Collector', 'Highway Department', 'Public'];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

@@ -14,7 +14,7 @@ export function DistrictAdminDashboard() {
       const zData = await fetchZones();
       const iData = await fetchInfrastructure();
       const pData = await fetchPredictions();
-      const aData = await fetchActiveAlerts('collector');
+      const aData = await fetchActiveAlerts('district_collector');
       
       setZones(Array.isArray(zData) ? zData : []);
       setInfra(iData.nodes);
@@ -40,7 +40,7 @@ export function DistrictAdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
               <FileText className="text-blue-700" size={28} />
-              DISTRICT ADMINISTRATION COMMAND
+              DISTRICT COLLECTORATE COMMAND
             </h1>
             <p className="text-gray-500 font-sans font-semibold text-gray-700 text-sm mt-2">Executive Summary & Multi-Department Response Tracker</p>
           </div>

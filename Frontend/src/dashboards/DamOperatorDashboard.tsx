@@ -5,11 +5,6 @@ import { Activity, Droplets, Target, CheckCircle2 } from 'lucide-react';
 import { fetchActiveAlerts, fetchSensorReadings, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, SensorReading, Prediction } from '../utils/dataFetcher';
 
-const mockData = Array.from({ length: 24 }).map((_, i) => ({
-  time: `${String(i).padStart(2, '0')}:00`,
-  inflow: 1500 + Math.random() * 800 * (i < 12 ? i / 12 : (24 - i) / 12),
-  outflow: 1200 + (i > 8 ? 600 : 0)
-}));
 
 export function DamOperatorDashboard() {
   const [sensor, setSensor] = useState<SensorReading | null>(null);
@@ -19,7 +14,7 @@ export function DamOperatorDashboard() {
   useEffect(() => {
     async function init() {
       const sData = await fetchSensorReadings('zone_a_godavari_upper');
-      const aData = await fetchActiveAlerts('dam_operator');
+      const aData = await fetchActiveAlerts('dam_controller');
       const pData = await fetchPredictions();
       
       if (sData.length > 0) setSensor(sData[0]);
@@ -41,7 +36,7 @@ export function DamOperatorDashboard() {
         <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
           <h1 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-3">
             <Droplets className="text-blue-700" />
-            Idukki Dam Operations
+            Dam Controller Operations
           </h1>
           <div className="flex gap-4">
             <div className={`shadow-sm border px-4 py-2 rounded-xl text-sm font-sans font-semibold flex items-center gap-2 ${
@@ -123,21 +118,11 @@ export function DamOperatorDashboard() {
           </div>
         </div>
 
-        <div className="border border-gray-200 bg-white shadow-sm p-6 rounded-2xl mt-6 h-80">
-          <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4">Inflow vs Outflow Projection (24h)</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={mockData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="time" stroke="#a1a1aa" fontSize={10} tickMargin={10} axisLine={false} tickLine={false} />
-              <YAxis stroke="#a1a1aa" fontSize={10} axisLine={false} tickLine={false} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a' }}
-                itemStyle={{ fontSize: 12, fontFamily: 'monospace' }} 
-              />
-                <Line type="monotone" dataKey="inflow" stroke="#3b82f6" strokeWidth={2} dot={false} name="Inflow (m³/s)" />
-                <Line type="stepAfter" dataKey="outflow" stroke="#f59e0b" strokeWidth={2} dot={false} name="Outflow (m³/s)" />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="border border-gray-200 bg-white shadow-sm p-6 rounded-2xl mt-6 h-80 flex items-center justify-center text-gray-400">
+           <div className="text-center">
+              <Activity size={32} className="mx-auto mb-2 opacity-50" />
+              <p className="text-xs font-bold uppercase">Real-time projection data unavailable</p>
+           </div>
         </div>
       </div>
     </div>

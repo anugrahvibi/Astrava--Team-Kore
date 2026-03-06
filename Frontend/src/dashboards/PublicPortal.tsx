@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
 import { ShieldAlert, Navigation, PhoneCall, AlertCircle, CheckCircle } from 'lucide-react';
-import { fetchPredictions } from '../utils/dataFetcher';
-import type { Prediction } from '../utils/dataFetcher';
+import { fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
+import type { Prediction, Alert } from '../utils/dataFetcher';
 
 export function PublicPortal() {
   const [pin, setPin] = useState('');
   const [searched, setSearched] = useState(false);
   const [isHighRisk, setIsHighRisk] = useState(false);
   const [matchingZone, setMatchingZone] = useState<Prediction | null>(null);
+  const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.length < 3) return;
     
     const predictions = await fetchPredictions();
-    // Simple mock logic: if pin matches first part of zone name or something
-    // For demo, let's just find first RED or AMBER zone
+    const alerts = await fetchActiveAlerts('public_advisory');
+    
     const criticalZone = predictions.find(p => p.alert_level !== 'GREEN');
     
-    if (criticalZone) {
-      setIsHighRisk(true);
-      setMatchingZone(criticalZone);
-    } else {
-      setIsHighRisk(false);
-      setMatchingZone(null);
-    }
+    setMatchingZone(criticalZone || null);
+    setIsHighRisk(!!criticalZone);
+    setActiveAlerts(alerts);
     setSearched(true);
   };
 
@@ -69,18 +66,21 @@ export function PublicPortal() {
                 </div>
                 
                 <div className="bg-white shadow-sm border border-gray-200 rounded-2xl p-6 space-y-4">
-                   <h3 className="text-sm font-bold uppercase tracking-wide text-gray-600 border-b border-gray-200 pb-2">Evacuation Instructions</h3>
-                   <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
-                     <li>Proceed to the nearest elevated shelter immediately.</li>
-                     <li>Do not attempt to drive through flooded roads (NH-66 is closed).</li>
-                     <li>Follow precise routing instructions from local authorities.</li>
-                   </ul>
-                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-4 flex justify-between items-center">
-                      <div>
-                        <div className="text-xs text-gray-600 uppercase font-bold tracking-wide">Nearest Safe Route & Shelter</div>
-                        <div className="font-bold text-emerald-700 text-lg mt-1">Kalamassery Relief Camp (3km)</div>
-                      </div>
-                      <Navigation className="text-emerald-700" size={24} />
+                   <h3 className="text-sm font-bold uppercase tracking-wide text-gray-600 border-b border-gray-200 pb-2">Operational Alerts</h3>
+                   <div className="space-y-3">
+                      {activeAlerts.length > 0 ? (
+                        activeAlerts.map((a) => (
+                          <div key={a.id} className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-900 font-medium font-sans font-semibold">
+                             • {a.action_text}
+                          </div>
+                        ))
+                      ) : (
+                        <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
+                           <li>Prepare emergency kit with 72-hour supplies.</li>
+                           <li>Monitor official news for evacuation orders.</li>
+                           <li>Avoid travel to low-lying areas in {matchingZone?.zone_name}.</li>
+                        </ul>
+                      )}
                    </div>
                 </div>
               </>
