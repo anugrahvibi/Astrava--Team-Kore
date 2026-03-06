@@ -110,9 +110,8 @@ function Navigation() {
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden md:flex flex-col items-end text-right leading-tight">
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none mb-1">Clearance Level</span>
-            <span className="text-[11px] font-black text-gray-500 tracking-tight">{role}</span>
+          <div className="hidden md:flex flex-col items-end text-right leading-none">
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.15em]">{role}</span>
           </div>
           <button
             aria-label="Open notifications"

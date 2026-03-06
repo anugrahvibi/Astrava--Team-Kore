@@ -116,16 +116,47 @@
 
 @layer components {
   .glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
-    backdrop-filter: blur(40px) saturate(200%) contrast(100%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%) contrast(100%);
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.15));
+    backdrop-filter: blur(28px) saturate(190%) contrast(100%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(100%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 12px 40px -8px rgba(31, 38, 135, 0.12);
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  .glass-blue {
+    background: rgba(37, 99, 235, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+  }
+
+  .glass-red {
+    background: rgba(239, 68, 68, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+  }
+
+  .glass-amber {
+    background: rgba(245, 158, 11, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+  }
+
+  .glass-emerald {
+    background: rgba(16, 185, 129, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .glass-orange {
+    background: rgba(249, 115, 22, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(249, 115, 22, 0.15);
+  }
+
   .premium-gradient {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%);
+    backdrop-filter: blur(20px);
   }
 
   .glow-red {
@@ -327,4 +358,54 @@
   font-size: 0.7rem;
   opacity: 0.8;
   margin-right: 0.2rem;
+}
+/* -- Leaflet Zoom Control Customization -- */
+.leaflet-control-zoom {
+  border: none !important;
+  margin: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 12px !important;
+  color: #1e293b !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 34px !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(37, 99, 235, 0.3) !important;
+  color: #2563eb !important;
+  transform: translateY(-2px);
+}
+
+.leaflet-control-zoom-in:active,
+.leaflet-control-zoom-out:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.leaflet-control-zoom-in {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+.leaflet-container a.leaflet-control-zoom-in,
+.leaflet-container a.leaflet-control-zoom-out {
+  text-decoration: none;
 }

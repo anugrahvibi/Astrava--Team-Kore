@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Droplets, Target, CheckCircle2, Waves, Settings, AlertTriangle, Zap, Wind, Shield, ArrowRight } from 'lucide-react';
 import { fetchActiveAlerts, fetchSensorReadings, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, SensorReading, Prediction } from '../utils/dataFetcher';
+import { useGsapAnimations } from '../utils/useGsapAnimations';
+import { useRef } from 'react';
 
 export function DamOperatorDashboard() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [sensor, setSensor] = useState<SensorReading | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
+
+  useGsapAnimations(containerRef);
 
   useEffect(() => {
     async function init() {
@@ -27,7 +32,7 @@ export function DamOperatorDashboard() {
   const systemStatus = prediction?.alert_level === 'RED' ? 'CRITICAL' : prediction?.alert_level === 'AMBER' ? 'WARNING' : 'NORMAL';
 
   return (
-    <div className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
+    <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 sm:gap-8 border-b border-black/5 pb-8 sm:pb-10">
@@ -46,30 +51,30 @@ export function DamOperatorDashboard() {
           </div>
           
            <div className="flex items-center gap-3 self-stretch sm:self-auto">
-             <div className="glass-card px-4 sm:px-6 py-3 sm:py-4 rounded-[1.8rem] border-white/60 bg-white/70 flex items-center gap-4 shadow-xl premium-shadow">
+             <div className="glass-card px-4 sm:px-6 py-3 sm:py-4 rounded-[1.8rem] flex items-center gap-4 shadow-xl premium-shadow">
                 <div className="text-right">
-                   <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Hydraulic Status</div>
+                   <div className="text-[9px] font-black text-gray-400/50 uppercase tracking-widest leading-none mb-1">Hydraulic Status</div>
                    <div className={`text-sm font-black uppercase ${
                      systemStatus === 'CRITICAL' ? 'text-red-600' : 
                      systemStatus === 'WARNING' ? 'text-orange-600' : 'text-emerald-600'
                    }`}>{systemStatus}</div>
                 </div>
-                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  systemStatus === 'CRITICAL' ? 'bg-red-600' : 
-                  systemStatus === 'WARNING' ? 'bg-orange-600' : 'bg-emerald-600'
+                <div className={`w-2 h-2 rounded-full animate-pulse ${
+                   systemStatus === 'CRITICAL' ? 'bg-red-600' : 
+                   systemStatus === 'WARNING' ? 'bg-orange-600' : 'bg-emerald-600'
                 }`} />
              </div>
-             <button className="w-11 h-11 sm:w-12 sm:h-12 glass-card rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all bg-white shadow-md">
+             <button className="w-11 h-11 sm:w-12 sm:h-12 glass-card rounded-2xl flex items-center justify-center text-gray-400/60 hover:text-blue-600 border-white/50 bg-white/30 backdrop-blur-md">
                 <Settings size={20} />
              </button>
           </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard icon={<Droplets />} label="Reservoir Level" value={`${reservoirPercentage}%`} subtext="Safety Margin: High" color="blue" />
-          <StatCard icon={<Zap />} label="Inflow Pulse" value={`${sensor?.reservoir_inflow_m3s || 450} m³/s`} subtext="RISING INTENSITY" color="blue" />
-          <StatCard icon={<Activity />} label="Sensor Grid Accuracy" value="98.2%" subtext="Network Latency: 4ms" color="emerald" />
-          <StatCard icon={<Wind />} label="Downstream Impact" value={systemStatus} subtext="Lead Window: Active" color={systemStatus === 'NORMAL' ? 'emerald' : systemStatus === 'WARNING' ? 'amber' : 'red'} />
+          <StatCard icon={<Droplets />} label="Reservoir Level" value={`${reservoirPercentage}%`} subtext="Safety Margin: High" glassType="glass-blue" />
+          <StatCard icon={<Zap />} label="Inflow Pulse" value={`${sensor?.reservoir_inflow_m3s || 450} m³/s`} subtext="RISING INTENSITY" glassType="glass-blue" />
+          <StatCard icon={<Activity />} label="Sensor Grid Accuracy" value="98.2%" subtext="Network Latency: 4ms" glassType="glass-emerald" />
+          <StatCard icon={<Wind />} label="Downstream Impact" value={systemStatus} subtext="Lead Window: Active" glassType={systemStatus === 'NORMAL' ? 'glass-emerald' : systemStatus === 'WARNING' ? 'glass-amber' : 'glass-red'} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
@@ -111,10 +116,10 @@ export function DamOperatorDashboard() {
                            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-200">Priority Grid Alpha</div>
                            <AlertTriangle size={14} className="text-amber-500 opacity-50" />
                         </div>
-                        <p className="text-gray-900 font-bold text-sm leading-relaxed">{alert.action_text}</p>
-                        <div className="mt-2 text-[8px] font-black text-gray-400 uppercase tracking-widest">Target Sector: {alert.zone_id}</div>
+                         <p className="text-gray-900 font-bold text-sm leading-relaxed">{alert.action_text}</p>
+                         <div className="mt-2 text-[8px] font-black text-blue-500/40 uppercase tracking-widest">Target Sector: {alert.zone_id}</div>
                       </div>
-                       <button className="w-full sm:w-auto justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95 whitespace-nowrap flex items-center gap-2">
+                       <button className="w-full sm:w-auto justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap flex items-center gap-3">
                          Execute Gate <ArrowRight size={14} />
                       </button>
                     </div>
@@ -139,25 +144,18 @@ interface StatCardProps {
   label: string;
   value: string;
   subtext: string;
-  color: string;
+  glassType: string;
 }
 
-function StatCard({ icon, label, value, subtext, color }: StatCardProps) {
-  const colorMap: Record<string, string> = {
-    blue: 'text-blue-600 bg-blue-50 border-blue-100',
-    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    red: 'text-red-600 bg-red-50 border-red-100',
-    amber: 'text-amber-600 bg-amber-50 border-amber-100',
-  };
-  
+function StatCard({ icon, label, value, subtext, glassType }: StatCardProps) {
   return (
-    <div className="glass-card p-6 rounded-[2.5rem] border-white/60 bg-white/70 hover:border-blue-200 transition-all group shadow-xl premium-shadow">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color] || colorMap.blue}`}>
-        {React.cloneElement(icon as any, { size: 20 })}
+    <div className={`glass-card ${glassType} p-6 rounded-[2.5rem] hover:scale-[1.02] transition-all group`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border border-white/20`}>
+        {React.cloneElement(icon as any, { size: 20, className: 'text-inherit' })}
       </div>
-      <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</div>
+      <div className="text-[10px] font-black opacity-40 uppercase tracking-widest mb-1">{label}</div>
       <div className="text-3xl font-black text-gray-900 brand-font tracking-tight mb-2">{value}</div>
-      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter italic">{subtext}</div>
+      <div className="text-[10px] font-bold opacity-30 uppercase tracking-tighter italic">{subtext}</div>
     </div>
   );
 }

@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
 import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchROIRankings } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, ROIRanking } from '../utils/dataFetcher';
 import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info, Clock } from 'lucide-react';
+import { useGsapAnimations } from '../utils/useGsapAnimations';
+import { useRef } from 'react';
 
 export function DistrictAdminDashboard() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [zones, setZones] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [roiRankings, setRoiRankings] = useState<ROIRanking[]>([]);
+
+  useGsapAnimations(containerRef);
 
   useEffect(() => {
     async function init() {
@@ -37,7 +41,8 @@ export function DistrictAdminDashboard() {
   }, 0);
 
   return (
-    <div className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
+  return (
+    <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
@@ -55,7 +60,7 @@ export function DistrictAdminDashboard() {
             </p>
           </div>
           
-          <div className="glass-card p-4 sm:p-6 rounded-[2.2rem] border-white/60 bg-white/70 flex items-center gap-4 sm:gap-6 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform premium-shadow w-full md:w-auto">
+          <div className="glass-blue p-4 sm:p-6 rounded-[2.2rem] flex items-center gap-4 sm:gap-6 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform w-full md:w-auto">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                <Users size={80} />
             </div>
@@ -71,7 +76,7 @@ export function DistrictAdminDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
-          <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
+          <section className="glass-card rounded-[2.5rem] overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
             <div className="p-5 sm:p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
               <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                  <BarChart3 size={16} className="text-blue-600" /> Administrative Risk Distribution
@@ -80,25 +85,25 @@ export function DistrictAdminDashboard() {
             </div>
             <div className="overflow-auto flex-1 custom-scrollbar">
               <table className="w-full min-w-[540px] text-left border-collapse">
-                <thead className="text-gray-400 uppercase font-black text-[9px] tracking-[0.2em] sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-100">
+                <thead className="text-gray-400 uppercase font-black text-[9px] tracking-[0.2em] sticky top-0 z-10 border-b border-gray-100 glass-blue backdrop-blur-md">
                   <tr>
                     <th className="p-6">Sector Identity</th>
                     <th className="p-6">Risk Assessment</th>
                     <th className="p-6 text-right">Lead (H)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-white/10">
                   {predictions.map(p => (
-                    <tr key={p.zone_id} className="hover:bg-blue-50/50 transition-colors group">
+                    <tr key={p.zone_id} className="hover:bg-blue-50/10 transition-colors group cursor-default">
                       <td className="p-6">
                          <div className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors uppercase">{p.zone_name || p.zone_id}</div>
                          <div className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-tighter">System ID: {p.zone_id}</div>
                       </td>
                       <td className="p-6">
                         <span className={`px-4 py-1.5 uppercase text-[9px] font-black rounded-full shadow-sm border ${
-                          p.alert_level === 'RED' ? 'bg-red-50 text-red-600 border-red-200' :
-                          p.alert_level === 'AMBER' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                          'bg-emerald-50 text-emerald-600 border-emerald-200'
+                          p.alert_level === 'RED' ? 'glass-red text-red-600 border-red-200' :
+                          p.alert_level === 'AMBER' ? 'glass-amber text-amber-600 border-amber-200' :
+                          'glass-emerald text-emerald-600 border-emerald-200'
                         }`}>
                           {p.alert_level}
                         </span>
@@ -111,7 +116,7 @@ export function DistrictAdminDashboard() {
             </div>
           </section>
 
-           <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
+           <section className="glass-card rounded-[2.5rem] overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
              <div className="p-5 sm:p-8 border-b border-gray-100 bg-orange-50/30 flex items-center justify-between">
                 <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                    <Zap size={16} className="text-orange-600" /> Operational Directive Queue
@@ -124,7 +129,7 @@ export function DistrictAdminDashboard() {
              <div className="overflow-y-auto flex-1 p-5 sm:p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
                   alerts.map((alert) => (
-                      <div key={alert.id} className="p-5 sm:p-6 bg-white border border-gray-100 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 transition-all hover:border-blue-200 hover:shadow-md group shadow-sm">
+                      <div key={alert.id} className="p-5 sm:p-6 glass-blue rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 transition-all hover:border-blue-400/50 hover:shadow-lg group">
                        <div className="flex-1">
                           <div className={`text-[10px] uppercase font-black tracking-[0.15em] mb-2 ${
                             alert.alert_level === 'RED' ? 'text-red-600' : 
@@ -135,14 +140,14 @@ export function DistrictAdminDashboard() {
                           <div className="text-gray-900 font-bold text-[13px] leading-relaxed max-w-sm">
                             {alert.action_text}
                           </div>
-                          <div className="mt-4 text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                             <Clock size={12} /> Action Window: {alert.deadline_hrs}H
+                          <div className="mt-4 text-[10px] font-black text-blue-500/60 uppercase tracking-widest flex items-center gap-2">
+                             <Clock size={12} className="opacity-60" /> Window: {alert.deadline_hrs}H
                           </div>
                        </div>
                         <div className="sm:ml-6 flex items-center gap-4 self-end sm:self-auto">
-                          <button className="bg-blue-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-90 transition-transform">
-                             <ArrowUpRight size={18} />
-                          </button>
+                           <button className="bg-blue-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-90 transition-transform flex items-center justify-center">
+                              <ArrowUpRight size={18} />
+                           </button>
                        </div>
                     </div>
                   ))
@@ -172,14 +177,14 @@ export function DistrictAdminDashboard() {
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {roiRankings.slice(0, 4).map((rank, i) => (
-                 <div key={rank.node_id} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 hover:border-blue-200 transition-colors">
-                    <div className="flex justify-between items-start">
-                       <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 border border-blue-100">
-                          <Shield size={20} />
-                       </div>
-                       <div className="text-[10px] font-black text-emerald-600 uppercase">Rank #{i+1}</div>
-                    </div>
+               {roiRankings.slice(0, 4).map((rank, i) => (
+                  <div key={rank.node_id} className="glass-blue p-6 rounded-[2rem] space-y-4 hover:border-blue-400/50 transition-colors group">
+                     <div className="flex justify-between items-start">
+                        <div className="w-10 h-10 glass-blue rounded-xl flex items-center justify-center text-blue-600 transition-all">
+                           <Shield size={20} />
+                        </div>
+                        <div className="text-[10px] font-black text-emerald-600 uppercase">Rank #{i+1}</div>
+                     </div>
                     <div>
                        <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{rank.node_id.replace(/_/g, ' ')}</div>
                        <div className="text-lg font-black text-gray-900 brand-font uppercase truncate">{rank.node_id.split('_').slice(1).join(' ')}</div>

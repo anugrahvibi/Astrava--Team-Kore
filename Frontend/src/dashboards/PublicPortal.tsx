@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
 import { Search, MapPin, AlertTriangle, Shield, CheckCircle2, Navigation, Activity, ChevronRight, Info, InfoIcon } from 'lucide-react';
 import { fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
 import type { Prediction, Alert } from '../utils/dataFetcher';
+import { useGsapAnimations } from '../utils/useGsapAnimations';
+import { useRef } from 'react';
 
 export function PublicPortal() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [pin, setPin] = useState('');
   const [searchResult, setSearchResult] = useState<Prediction | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [globalRisks, setGlobalRisks] = useState<Prediction[]>([]);
   const [advisories, setAdvisories] = useState<Alert[]>([]);
+
+  useGsapAnimations(containerRef);
 
   useEffect(() => {
     async function loadPublicData() {
@@ -33,7 +37,8 @@ export function PublicPortal() {
   };
 
   return (
-      <div className="pt-20 sm:pt-24 lg:pt-26 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
+  return (
+      <div ref={containerRef} className="pt-20 sm:pt-24 lg:pt-26 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-20 space-y-10 sm:space-y-16">
         
         {/* Cinematic Header */}
@@ -51,9 +56,8 @@ export function PublicPortal() {
           </p>
         </div>
 
-        {/* Intelligence Search Bar */}
             <div className="max-w-2xl mx-auto w-full">
-               <div className="glass-card p-2 rounded-[2rem] sm:rounded-[2.5rem] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl border-white/60 bg-white/70 shadow-blue-600/5 premium-shadow">
+               <div className="glass-card p-2 rounded-[2rem] sm:rounded-[2.5rem] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl bg-white/50 premium-shadow">
             <input 
               type="text" 
                      placeholder="Enter sector ID (e.g. ZONE_A)"
@@ -80,7 +84,7 @@ export function PublicPortal() {
              </h2>
              
              {searchResult ? (
-                <div className="glass-card p-6 sm:p-10 rounded-[3rem] border-white/60 bg-white shadow-xl premium-shadow space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                <div className="glass-card p-6 sm:p-10 rounded-[3rem] space-y-8 animate-in fade-in slide-in-from-bottom-4">
                    <div className="flex justify-between items-start gap-3">
                       <div>
                          <h3 className="text-2xl sm:text-3xl font-black text-gray-900 brand-font uppercase leading-none break-words">{searchResult.zone_name || searchResult.zone_id}</h3>
@@ -96,21 +100,21 @@ export function PublicPortal() {
                    </div>
 
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="bg-[#f8fafc] p-6 rounded-3xl border border-gray-100 shadow-sm">
-                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Flood Prob.</div>
-                         <div className="text-4xl font-black text-gray-900 brand-font">{(searchResult.flood_probability * 100).toFixed(0)}%</div>
-                      </div>
-                      <div className="bg-[#f8fafc] p-6 rounded-3xl border border-gray-100 shadow-sm">
-                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lead Time</div>
-                         <div className="text-4xl font-black text-blue-600 brand-font">{searchResult.lead_time_hours}H</div>
-                      </div>
+                       <div className="glass-blue p-6 rounded-3xl">
+                          <div className="text-[10px] font-black text-blue-500/60 uppercase tracking-widest mb-1">Flood Prob.</div>
+                          <div className="text-4xl font-black text-gray-900 brand-font">{(searchResult.flood_probability * 100).toFixed(0)}%</div>
+                       </div>
+                       <div className="glass-blue p-6 rounded-3xl">
+                          <div className="text-[10px] font-black text-blue-500/60 uppercase tracking-widest mb-1">Lead Time</div>
+                          <div className="text-4xl font-black text-blue-600 brand-font">{searchResult.lead_time_hours}H</div>
+                       </div>
                    </div>
 
-                   <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl space-y-3">
-                      <div className="flex items-center gap-3 text-blue-600">
-                         <Info size={18} />
-                         <span className="text-xs font-black uppercase tracking-widest">Model Safety Bulletin</span>
-                      </div>
+                    <div className="p-6 glass-blue rounded-3xl space-y-3">
+                       <div className="flex items-center gap-3 text-blue-600">
+                          <Info size={18} />
+                          <span className="text-xs font-black uppercase tracking-widest">Model Safety Bulletin</span>
+                       </div>
                       <p className="text-gray-600 text-sm font-medium leading-relaxed italic">
                         {searchResult.alert_level === 'RED' 
                           ? "Severe risk detected. Evacuation of ground-level structures is prioritized via government channels." 
@@ -143,7 +147,7 @@ export function PublicPortal() {
              <div className="space-y-4">
                 {advisories.length > 0 ? (
                   advisories.map((alert) => (
-                    <div key={alert.id} className="glass-card p-4 sm:p-6 rounded-[2.2rem] border-white/60 bg-white/70 shadow-xl premium-shadow flex items-start gap-4 sm:gap-6 group hover:translate-x-1 transition-transform">
+                    <div key={alert.id} className="glass-card p-4 sm:p-6 rounded-[2.2rem] bg-white/50 shadow-xl premium-shadow flex items-start gap-4 sm:gap-6 group transition-transform">
                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
                           <Activity size={24} />
                        </div>

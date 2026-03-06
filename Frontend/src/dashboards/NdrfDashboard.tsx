@@ -4,8 +4,11 @@ import { ZonePanel } from '../components/ZonePanel';
 import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchLeadTimes, fetchVulnerabilities } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, LeadTimeTicker, VulnerabilityData } from '../utils/dataFetcher';
 import { AlertTriangle, MapPin, ShieldAlert, Navigation, Activity, CheckCircle2, Zap, Shield, Radio, Clock, Target, Info, ShieldCheck } from 'lucide-react';
+import { useGsapAnimations } from '../utils/useGsapAnimations';
+import { useRef } from 'react';
 
 export function NdrfDashboard() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [zones, setZones] = useState<any>(null);
   const [infra, setInfra] = useState<InfrastructureNode[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -16,6 +19,8 @@ export function NdrfDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [scenario, setScenario] = useState('2018_peak');
   const [roiRankings, setRoiRankings] = useState<any[]>([]);
+
+  useGsapAnimations(containerRef);
 
   useEffect(() => {
     async function init() {
@@ -56,7 +61,7 @@ export function NdrfDashboard() {
     .sort((a, b) => (a.hours_until_peak || 0) - (b.hours_until_peak || 0))[0];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full w-full bg-transparent pt-20 sm:pt-24 lg:pt-26 p-3 sm:p-4 gap-3 sm:gap-4 overflow-y-auto custom-scrollbar">
+    <div ref={containerRef} className="flex flex-col lg:flex-row h-full w-full bg-transparent pt-20 sm:pt-24 lg:pt-26 p-3 sm:p-4 gap-3 sm:gap-4 overflow-y-auto custom-scrollbar">
       <div className="w-full lg:w-96 h-auto lg:h-full max-h-[52vh] lg:max-h-none glass-card flex flex-col z-10 shadow-xl shrink-0 rounded-[2.5rem] border border-white/70 bg-white/80 overflow-hidden">
         <div className="p-4 sm:p-6 border-b border-black/5 bg-blue-50/30">
           <div className="flex items-center justify-between mb-4">
@@ -80,12 +85,12 @@ export function NdrfDashboard() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Red Alerts</div>
+            <div className="glass-red p-3 rounded-2xl">
+              <div className="text-[10px] font-black text-red-500/60 uppercase mb-1">Red Alerts</div>
               <div className="text-xl font-black text-red-600 leading-none">{sortedRisks.filter(r => r.alert_level === 'RED').length}</div>
             </div>
-            <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Avg Lead</div>
+            <div className="glass-blue p-3 rounded-2xl">
+              <div className="text-[10px] font-black text-blue-500/60 uppercase mb-1">Avg Lead</div>
               <div className="text-xl font-black text-blue-600 leading-none">
                 {predictions.length > 0 ? (predictions.reduce((acc, p) => acc + p.lead_time_hours, 0) / predictions.length).toFixed(1) : '0'}h
               </div>
@@ -96,9 +101,9 @@ export function NdrfDashboard() {
         <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-12 custom-scrollbar">
           {/* Critical Window Ticker */}
           {criticalLead && (
-            <section className="bg-red-50 p-5 rounded-[2rem] border border-red-100 space-y-3 shadow-sm">
+            <section className="glass-red p-5 rounded-[2rem] space-y-3">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                <div className="text-[10px] font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
                   <Clock size={14} /> Peak Surge T-Minus
                 </div>
                 <span className="text-xs font-black text-red-600 uppercase">{criticalLead.hours_until_peak}H</span>
@@ -122,15 +127,15 @@ export function NdrfDashboard() {
                   <div
                     key={zone.zone_id}
                     onClick={() => setSelectedZone(zone.zone_id)}
-                    className={`group p-4 rounded-3xl border transition-all duration-300 cursor-pointer shadow-sm ${selectedZone === zone.zone_id
-                      ? (zone.alert_level === 'RED' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200')
-                      : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+                    className={`group p-4 rounded-3xl transition-all duration-300 cursor-pointer ${selectedZone === zone.zone_id
+                      ? (zone.alert_level === 'RED' ? 'glass-red border-red-300' : 'glass-amber border-amber-300')
+                      : 'glass-card border-white/50 hover:border-blue-300/50 hover:shadow-lg'
                       }`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="font-bold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{zone.zone_name || zone.zone_id}</div>
                       <div className={`text-[9px] font-black px-2 py-0.5 rounded-lg ${zone.alert_level === 'RED' ? 'bg-red-600 text-white' : 'bg-amber-400 text-black'
-                        }`}>
+                         }`}>
                         T-{zone.lead_time_hours}H
                       </div>
                     </div>
@@ -165,7 +170,7 @@ export function NdrfDashboard() {
                   const criticality = isObj ? (rec as any).criticality : 'ADVISORY';
 
                   return (
-                    <div key={i} className="p-4 bg-orange-50 rounded-3xl border border-orange-100 space-y-2">
+                    <div key={i} className="p-4 glass-orange rounded-3xl space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-black text-orange-600 uppercase">{nodeId}</span>
                         <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-[8px] font-black uppercase tracking-widest">{criticality}</span>
@@ -185,7 +190,7 @@ export function NdrfDashboard() {
               </h3>
               <div className="space-y-3">
                 {roiRankings.slice(0, 3).map((roi, i) => (
-                  <div key={i} className="p-4 bg-emerald-50 rounded-3xl border border-emerald-100 group hover:shadow-md transition-all">
+                  <div key={i} className="p-4 glass-emerald rounded-3xl group hover:shadow-md transition-all">
                     <div className="flex justify-between items-start mb-2">
                       <div className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">{roi.node_id}</div>
                       <div className="text-[11px] font-black text-emerald-900">₹10L Cost</div>
@@ -212,7 +217,7 @@ export function NdrfDashboard() {
               </h3>
               <div className="space-y-3">
                 {alerts.map(alert => (
-                  <div key={alert.id} className="p-5 bg-white rounded-3xl border border-blue-100 relative overflow-hidden group hover:shadow-md transition-all shadow-sm">
+                  <div key={alert.id} className="p-5 glass-blue rounded-3xl relative overflow-hidden group hover:shadow-md transition-all shadow-sm">
                     <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
                       <Navigation size={40} className="text-blue-600" />
                     </div>
