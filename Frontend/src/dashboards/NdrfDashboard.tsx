@@ -47,9 +47,9 @@ export function NdrfDashboard() {
   const criticalLead = leadTimes.sort((a, b) => a.hours_until_peak - b.hours_until_peak)[0];
 
   return (
-    <div className="flex h-full w-full bg-transparent p-4 gap-4">
-      <div className="w-96 h-full glass-card flex flex-col z-10 shadow-xl shrink-0 rounded-[2.5rem] border border-white/70 bg-white/80 overflow-hidden">
-        <div className="pt-32 p-6 border-b border-black/5 bg-blue-50/30">
+    <div className="flex flex-col lg:flex-row h-full w-full bg-transparent p-3 sm:p-4 gap-3 sm:gap-4 overflow-y-auto custom-scrollbar">
+      <div className="w-full lg:w-96 h-auto lg:h-full max-h-[52vh] lg:max-h-none glass-card flex flex-col z-10 shadow-xl shrink-0 rounded-[2.5rem] border border-white/70 bg-white/80 overflow-hidden">
+        <div className="pt-24 sm:pt-28 lg:pt-32 p-4 sm:p-6 border-b border-black/5 bg-blue-50/30">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-black text-gray-900 brand-font tracking-tight text-lg flex items-center gap-3">
               <Shield className="text-blue-600" size={20} /> NDRF <span className="text-blue-600">TACTICAL</span>
@@ -73,7 +73,7 @@ export function NdrfDashboard() {
           </div>
         </div>
         
-        <div className="p-6 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
           {/* Critical Window Ticker */}
           {criticalLead && (
              <section className="bg-red-50 p-5 rounded-[2rem] border border-red-100 space-y-3 shadow-sm">
@@ -173,7 +173,7 @@ export function NdrfDashboard() {
           )}
         </div>
 
-        <div className="p-6 border-t border-gray-100 bg-white">
+        <div className="p-4 sm:p-6 border-t border-gray-100 bg-white">
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 active:scale-95 transition-transform cursor-pointer">
                  <Radio size={24} className="animate-pulse" />
@@ -186,7 +186,7 @@ export function NdrfDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 relative h-full rounded-[2.5rem] overflow-hidden border border-white/60 shadow-xl">
+      <div className="flex-1 relative min-h-[65vh] lg:min-h-0 h-[65vh] lg:h-full rounded-[2.5rem] overflow-hidden border border-white/60 shadow-xl">
         <MapView 
           zonesGeoJson={zones}
           infrastructureNodes={infra}
@@ -204,7 +204,7 @@ export function NdrfDashboard() {
         )}
         
         {/* Global Stats Overlay for Light Mode */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 pointer-events-none">
+        <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 hidden md:flex gap-4 pointer-events-none">
            <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-white shadow-xl flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
               <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Model Accuracy: 94.8%</span>

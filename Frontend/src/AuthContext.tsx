@@ -6,7 +6,7 @@ export type Role = 'Dam Controller' | 'NDRF' | 'District Collector' | 'Highway D
 
 interface AuthContextType {
   role: Role;
-  login: (role?: Role) => boolean;
+  login: (role?: Role) => Role;
   logout: () => void;
 }
 
@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const navigate = useNavigate();
 
-  const login = (r?: Role) => {
+  const login = (r?: Role): Role => {
     // Determine the role to login with
     const registeredRole = localStorage.getItem('registered_role') as Role;
     
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // If a specific role was provided but doesn't match registration
     if (r && registeredRole && registeredRole !== r) {
       alert(`Access denied. You are registered as ${registeredRole}.`);
-      return false;
+      return null;
     }
     
     setRole(loginRole);
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!registeredRole && loginRole) {
       localStorage.setItem('registered_role', loginRole);
     }
-    return true;
+    return loginRole;
   };
 
   const logout = () => {

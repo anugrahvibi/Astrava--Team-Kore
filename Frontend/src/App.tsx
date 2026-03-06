@@ -98,18 +98,18 @@ function Navigation() {
 
   return (
     <>
-      <nav style={{ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'rgba(255,255,255,0.55)' }} className="fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-7xl h-[4.25rem] rounded-[1.8rem] flex items-center justify-between px-5 md:px-7 z-50 shadow-xl border border-white/70 transition-all duration-500">
+      <nav style={{ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'rgba(255,255,255,0.55)' }} className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-7xl h-14 sm:h-[4.25rem] rounded-[1.4rem] sm:rounded-[1.8rem] flex items-center justify-between px-4 sm:px-6 md:px-7 z-50 shadow-xl border border-white/70 transition-all duration-500">
         <div className="flex items-center gap-3 md:gap-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <div className="w-10 h-10 flex items-center justify-center">
               <img src="/logo.svg" alt="CascadeNet logo" className="w-7 h-7" />
             </div>
-            <h1 className="text-xl font-black tracking-tight text-gray-900 brand-font leading-none">
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 brand-font leading-none">
               Cascade<span className="text-blue-600 ending-serif">Net</span>
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden md:flex flex-col items-end text-right leading-tight">
             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none mb-1">Clearance Level</span>
             <span className="text-[11px] font-black text-gray-500 tracking-tight">{role}</span>
@@ -117,7 +117,7 @@ function Navigation() {
           <button
             aria-label="Open notifications"
             onClick={() => setIsNotificationsOpen((prev) => !prev)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-full border border-gray-200 bg-white/70 text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
+            className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-gray-200 bg-white/70 text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
           >
             <Bell size={19} strokeWidth={2.1} className={unreadCount > 0 ? 'animate-pulse' : ''} />
             {unreadCount > 0 && (
@@ -128,9 +128,9 @@ function Navigation() {
           </button>
           <button 
             onClick={logout} 
-            className="h-10 min-w-[112px] flex items-center justify-center gap-2 bg-white/55 hover:bg-red-600 text-gray-700 hover:text-white px-4 rounded-full font-black text-[10px] uppercase tracking-[0.14em] transition-all duration-300 border border-gray-200 hover:border-red-600 active:scale-95"
+            className="h-9 sm:h-10 w-9 sm:min-w-[112px] sm:w-auto flex items-center justify-center gap-0 sm:gap-2 bg-white/55 hover:bg-red-600 text-gray-700 hover:text-white px-0 sm:px-4 rounded-full font-black text-[10px] uppercase tracking-[0.14em] transition-all duration-300 border border-gray-200 hover:border-red-600 active:scale-95"
           >
-            <LogOut size={14} className="shrink-0" /> <span>Logout</span>
+            <LogOut size={14} className="shrink-0" /> <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </nav>
@@ -142,8 +142,8 @@ function Navigation() {
             className="fixed inset-0 z-40 bg-transparent"
             onClick={() => setIsNotificationsOpen(false)}
           />
-          <aside className="fixed top-[5.75rem] right-5 md:right-7 w-[360px] max-w-[calc(100vw-1.5rem)] max-h-[76vh] z-[60] rounded-[1.75rem] border border-gray-200/90 bg-white shadow-2xl overflow-hidden origin-top-right animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300">
-            <div className="h-14 px-5 border-b border-gray-100 flex items-center justify-between bg-white">
+          <aside className="fixed top-[5rem] sm:top-[6.5rem] right-[3%] sm:right-[4%] md:right-7 w-[360px] max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100dvh-5.5rem)] sm:max-h-[76vh] z-[60] rounded-[1.25rem] sm:rounded-[1.75rem] border border-white/70 bg-white/45 shadow-2xl overflow-hidden origin-top-right animate-in fade-in zoom-in-95 slide-in-from-right-8 duration-300 backdrop-blur-2xl">
+            <div className="h-14 px-5 border-b border-white/60 flex items-center justify-between bg-white/35 backdrop-blur-xl">
               <div>
                 <div className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase">Notifications</div>
                 <div className="text-[11px] font-semibold text-gray-400 mt-0.5">Latest role updates</div>
@@ -165,13 +165,13 @@ function Navigation() {
               </div>
             </div>
 
-            <div className="max-h-[calc(76vh-3.5rem)] overflow-y-auto custom-scrollbar p-3.5 space-y-2.5">
+            <div className="max-h-[calc(76vh-3.5rem)] overflow-y-auto custom-scrollbar p-3.5 space-y-2.5 bg-white/20">
               {visibleNotifications.length > 0 ? (
                 visibleNotifications.map((item) => (
                   <button
                     key={item.id}
                     onClick={onNotificationClick}
-                    className={`w-full text-left p-3.5 rounded-2xl border border-gray-100 border-l-[3px] ${getSeverityClasses(item.alert_level)} hover:border-blue-200 hover:shadow-sm transition-all`}
+                    className={`w-full text-left p-3.5 rounded-2xl border border-white/70 border-l-[3px] ${getSeverityClasses(item.alert_level)} hover:border-blue-200 hover:shadow-sm transition-all backdrop-blur-sm`}
                   >
                     <div className="flex items-center justify-between gap-3 mb-1.5">
                       <span className="text-[10px] font-black uppercase tracking-wider text-gray-600 truncate">{item.zone_id}</span>
@@ -184,7 +184,7 @@ function Navigation() {
                   </button>
                 ))
               ) : (
-                <div className="py-12 px-6 text-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
+                <div className="py-12 px-6 text-center rounded-2xl border border-dashed border-white/80 bg-white/40 backdrop-blur-sm">
                   <p className="text-xs font-semibold text-gray-400">No active notifications</p>
                 </div>
               )}
@@ -198,7 +198,9 @@ function Navigation() {
 
 function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, allowedRole: Role }) {
   const { role } = useAuth();
-  if (role !== allowedRole) {
+  const persistedRole = (localStorage.getItem('cascade_role') as Role) || null;
+  const effectiveRole = role || persistedRole;
+  if (effectiveRole !== allowedRole) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
@@ -206,19 +208,37 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, 
 
 function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
-  if (role === 'Dam Controller') return <Navigate to="/dam" replace />;
-  if (role === 'NDRF') return <Navigate to="/ndrf" replace />;
-  if (role === 'District Collector') return <Navigate to="/admin" replace />;
-  if (role === 'Highway Department') return <Navigate to="/highway" replace />;
-  if (role === 'Public') return <Navigate to="/public" replace />;
+  const persistedRole = (localStorage.getItem('cascade_role') as Role) || null;
+  const effectiveRole = role || persistedRole;
+  if (effectiveRole === 'Dam Controller') return <Navigate to="/dam" replace />;
+  if (effectiveRole === 'NDRF') return <Navigate to="/ndrf" replace />;
+  if (effectiveRole === 'District Collector') return <Navigate to="/admin" replace />;
+  if (effectiveRole === 'Highway Department') return <Navigate to="/highway" replace />;
+  if (effectiveRole === 'Public') return <Navigate to="/public" replace />;
   return <>{children}</>;
 }
 
 function AppContent() {
   const { role } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    const routeTitles: Record<string, string> = {
+      '/': 'CascadeNet | Login',
+      '/login': 'CascadeNet | Login',
+      '/signup': 'CascadeNet | Sign Up',
+      '/public': 'CascadeNet | Public Dashboard',
+      '/ndrf': 'CascadeNet | NDRF Dashboard',
+      '/dam': 'CascadeNet | Dam Controller Dashboard',
+      '/admin': 'CascadeNet | District Collector Dashboard',
+      '/highway': 'CascadeNet | Highway Department Dashboard',
+    };
+
+    document.title = routeTitles[location.pathname] ?? 'CascadeNet | Flood Intelligence';
+  }, [location.pathname]);
   
   return (
-    <div className="h-screen w-screen bg-[#f8fafc] text-gray-900 flex flex-col overflow-hidden relative font-sans no-scrollbar">
+    <div className="h-dvh min-h-dvh w-full bg-[#f8fafc] text-gray-900 flex flex-col overflow-hidden relative font-sans no-scrollbar">
       {/* Ambient backgrounds — must be vivid so glassmorphism shows */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
         <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-blue-400/30 blur-[120px] rounded-full" />
@@ -255,3 +275,4 @@ function App() {
 }
 
 export default App;
+

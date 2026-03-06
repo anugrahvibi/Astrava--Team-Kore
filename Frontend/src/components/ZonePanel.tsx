@@ -24,8 +24,8 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
     }));
 
   return (
-    <div className="absolute top-4 right-4 w-96 h-[calc(100%-2rem)] bg-white/95 backdrop-blur-xl border border-white/70 rounded-[2.5rem] shadow-2xl flex flex-col z-40 animate-in slide-in-from-right duration-500 overflow-hidden">
-      <div className="pt-32 flex items-center justify-between p-8 border-b border-gray-100 bg-white/50">
+    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-[calc(100%-1.5rem)] sm:w-96 max-w-[24rem] h-[calc(100%-1.5rem)] sm:h-[calc(100%-2rem)] bg-white/95 backdrop-blur-xl border border-white/70 rounded-[2.5rem] shadow-2xl flex flex-col z-40 animate-in slide-in-from-right duration-500 overflow-hidden">
+      <div className="pt-24 sm:pt-28 lg:pt-32 flex items-center justify-between p-5 sm:p-8 border-b border-gray-100 bg-white/50">
         <div className="space-y-1">
           <h2 className="font-black text-sm tracking-widest flex items-center gap-2 text-gray-900 uppercase">
             <Activity size={18} className="text-blue-600" />
@@ -38,7 +38,7 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
         </button>
       </div>
 
-      <div className="p-8 overflow-y-auto flex-1 custom-scrollbar space-y-10">
+      <div className="p-5 sm:p-8 overflow-y-auto flex-1 custom-scrollbar space-y-6 sm:space-y-10">
         <div>
           <AlertCard prediction={prediction} />
         </div>
@@ -72,7 +72,7 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
         </div>
       </div>
       
-      <div className="p-8 border-t border-gray-100 bg-gray-50/50">
+      <div className="p-5 sm:p-8 border-t border-gray-100 bg-gray-50/50">
          <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">
             System Synchronization: Online
          </div>

@@ -33,18 +33,18 @@ export function PublicPortal() {
   };
 
   return (
-    <div className="pt-32 h-full w-full bg-transparent overflow-y-auto w-full custom-scrollbar">
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 space-y-16">
+      <div className="pt-20 sm:pt-28 lg:pt-32 h-full w-full bg-transparent overflow-y-auto custom-scrollbar">
+         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-20 space-y-10 sm:space-y-16">
         
         {/* Cinematic Header */}
         <div className="text-center space-y-6 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full -z-10" />
-          <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full text-blue-600">
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-blue-50 border border-blue-100 rounded-full text-blue-600">
              <Shield size={16} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Community Defense Network</span>
+             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] sm:tracking-[0.2em]">Community Defense Network</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-gray-900 brand-font tracking-tight leading-[0.9]">
-             Kochi <span className="wave-underline">Flood</span> <span className="text-blue-600 ending-serif">Intelligence</span>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-gray-900 brand-font tracking-tight leading-[0.9]">
+             Kochi Flood <span className="text-blue-600 ending-serif">Intelligence</span>
           </h1>
           <p className="max-w-xl mx-auto text-gray-500 font-bold text-lg leading-relaxed">
              Access real-time predictive data for your sector. Powered by high-resolution LSTM models.
@@ -52,18 +52,18 @@ export function PublicPortal() {
         </div>
 
         {/* Intelligence Search Bar */}
-        <div className="max-w-2xl mx-auto">
-          <div className="glass-card p-2 rounded-[2.5rem] flex items-center shadow-2xl border-white/60 bg-white/70 shadow-blue-600/5 premium-shadow">
+            <div className="max-w-2xl mx-auto w-full">
+               <div className="glass-card p-2 rounded-[2rem] sm:rounded-[2.5rem] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl border-white/60 bg-white/70 shadow-blue-600/5 premium-shadow">
             <input 
               type="text" 
-              placeholder="Enter your Ward / Sector ID (e.g. ZONE_A)"
+                     placeholder="Enter sector ID (e.g. ZONE_A)"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              className="flex-1 bg-transparent px-8 h-16 outline-none text-lg font-bold text-gray-800 placeholder:text-gray-400 brand-font"
+                              className="min-w-0 flex-1 bg-transparent px-4 sm:px-8 h-12 sm:h-16 outline-none text-sm sm:text-lg font-bold text-gray-800 placeholder:text-gray-400 brand-font"
             />
             <button 
               onClick={handleSearch}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 h-16 rounded-[2rem] font-black text-sm uppercase transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-3"
+                              className="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-10 h-12 sm:h-16 rounded-[1.25rem] sm:rounded-[2rem] font-black text-[11px] sm:text-sm uppercase transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-2 sm:gap-3"
             >
               {isSearching ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search size={22} />}
               Search Sector
@@ -80,10 +80,10 @@ export function PublicPortal() {
              </h2>
              
              {searchResult ? (
-                <div className="glass-card p-10 rounded-[3rem] border-white/60 bg-white shadow-xl premium-shadow space-y-8 animate-in fade-in slide-in-from-bottom-4">
-                   <div className="flex justify-between items-start">
+                <div className="glass-card p-6 sm:p-10 rounded-[3rem] border-white/60 bg-white shadow-xl premium-shadow space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                   <div className="flex justify-between items-start gap-3">
                       <div>
-                         <h3 className="text-3xl font-black text-gray-900 brand-font uppercase leading-none">{searchResult.zone_name || searchResult.zone_id}</h3>
+                         <h3 className="text-2xl sm:text-3xl font-black text-gray-900 brand-font uppercase leading-none break-words">{searchResult.zone_name || searchResult.zone_id}</h3>
                          <div className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Prediction Coordinates Verified</div>
                       </div>
                       <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm border ${
@@ -95,7 +95,7 @@ export function PublicPortal() {
                       </div>
                    </div>
 
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="bg-[#f8fafc] p-6 rounded-3xl border border-gray-100 shadow-sm">
                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Flood Prob.</div>
                          <div className="text-4xl font-black text-gray-900 brand-font">{(searchResult.flood_probability * 100).toFixed(0)}%</div>
@@ -119,12 +119,12 @@ export function PublicPortal() {
                    </div>
                 </div>
              ) : !isSearching && pin ? (
-                <div className="glass-card p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 opacity-50 shadow-sm">
+                <div className="glass-card p-12 sm:p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 opacity-50 shadow-sm">
                    <AlertTriangle className="mx-auto text-gray-300" size={48} />
                    <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Sector ID Not Recognized</div>
                 </div>
              ) : (
-                <div className="glass-card p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 shadow-sm opacity-60">
+                <div className="glass-card p-12 sm:p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 shadow-sm opacity-60">
                    <Activity className="mx-auto text-blue-100" size={48} />
                    <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Awaiting Parameter Input</div>
                 </div>
@@ -143,18 +143,18 @@ export function PublicPortal() {
              <div className="space-y-4">
                 {advisories.length > 0 ? (
                   advisories.map((alert) => (
-                    <div key={alert.id} className="glass-card p-6 rounded-[2.2rem] border-white/60 bg-white/70 shadow-xl premium-shadow flex items-start gap-6 group hover:translate-x-1 transition-transform">
+                    <div key={alert.id} className="glass-card p-4 sm:p-6 rounded-[2.2rem] border-white/60 bg-white/70 shadow-xl premium-shadow flex items-start gap-4 sm:gap-6 group hover:translate-x-1 transition-transform">
                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
                           <Activity size={24} />
                        </div>
                        <div className="flex-1 space-y-2">
-                          <div className="flex justify-between items-center">
-                             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{alert.zone_id} BROADCAST</span>
+                          <div className="flex flex-wrap justify-between items-center gap-2">
+                             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest break-all">{alert.zone_id} BROADCAST</span>
                              <div className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">T-{alert.deadline_hrs}H</div>
                           </div>
                           <p className="text-gray-900 font-bold text-sm leading-relaxed">{alert.action_text}</p>
                        </div>
-                       <ChevronRight size={18} className="text-gray-300 mt-2" />
+                       <ChevronRight size={18} className="text-gray-300 mt-2 hidden sm:block" />
                     </div>
                   ))
                 ) : (
@@ -169,10 +169,10 @@ export function PublicPortal() {
         </div>
 
         {/* Global Stats Footer */}
-        <div className="pt-20 border-t border-black/5 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="pt-12 sm:pt-20 border-t border-black/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
            <div className="space-y-2">
               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Model Ver.</div>
-              <div className="text-xl font-black text-gray-900">LSTM_CASCADE_V3</div>
+               <div className="text-lg sm:text-xl font-black text-gray-900 break-all">LSTM_CASCADE_V3</div>
            </div>
            <div className="space-y-2">
               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Live Sync</div>

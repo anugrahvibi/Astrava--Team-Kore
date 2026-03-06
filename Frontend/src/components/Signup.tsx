@@ -14,12 +14,13 @@ export function Signup() {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.removeItem('registered_role');
-    if (login(role as Role)) {
-      if (role === 'NDRF') navigate('/ndrf');
-      else if (role === 'Dam Controller') navigate('/dam');
-      else if (role === 'District Collector') navigate('/admin');
-      else if (role === 'Highway Department') navigate('/highway');
-      else navigate('/public');
+    const signedRole = login(role as Role);
+    if (signedRole) {
+      if (signedRole === 'NDRF') navigate('/ndrf', { replace: true });
+      else if (signedRole === 'Dam Controller') navigate('/dam', { replace: true });
+      else if (signedRole === 'District Collector') navigate('/admin', { replace: true });
+      else if (signedRole === 'Highway Department') navigate('/highway', { replace: true });
+      else navigate('/public', { replace: true });
     }
   };
 
@@ -40,7 +41,7 @@ export function Signup() {
           </div>
           <div>
             <h1 className="text-5xl font-black text-gray-900 brand-font tracking-tighter leading-none">
-              <span className="wave-underline">Cascade</span><span className="text-blue-600 ending-serif">Net</span>
+              Cascade<span className="text-blue-600 ending-serif">Net</span>
             </h1>
             <p className="text-gray-400 text-[10px] font-black tracking-[0.3em] uppercase mt-3">Advanced Intelligence & Response</p>
           </div>

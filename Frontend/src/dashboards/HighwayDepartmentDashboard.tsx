@@ -26,8 +26,8 @@ export function HighwayDepartmentDashboard() {
     : '8.0';
 
   return (
-    <div className="pt-32 p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
-      <div className="max-w-7xl mx-auto space-y-10 py-6">
+    <div className="pt-24 sm:pt-28 lg:pt-32 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
+      <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
           <div className="space-y-4">
@@ -35,7 +35,7 @@ export function HighwayDepartmentDashboard() {
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <Truck size={28} className="text-white" />
               </div>
-              <h1 className="text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
                 Logistics <span className="text-blue-600">Command</span>
               </h1>
             </div>
@@ -44,8 +44,8 @@ export function HighwayDepartmentDashboard() {
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-             <div className="glass-card px-6 py-4 rounded-[1.8rem] border-white/60 bg-white/70 flex items-center gap-4 shadow-xl premium-shadow">
+           <div className="flex items-center gap-3 self-stretch sm:self-auto">
+             <div className="glass-card px-4 sm:px-6 py-3 sm:py-4 rounded-[1.8rem] border-white/60 bg-white/70 flex items-center gap-4 shadow-xl premium-shadow">
                 <div className="text-right">
                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Network Status</div>
                    <div className="text-sm font-black text-emerald-600 uppercase tracking-widest">Connected</div>
@@ -61,18 +61,18 @@ export function HighwayDepartmentDashboard() {
           <StatCard icon={<ShieldCheck />} label="Assets Ready" value="ALPHA_08" subtext="Standby Protocols" color="emerald" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <section className="lg:col-span-2 glass-card rounded-[3rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[600px] shadow-xl premium-shadow">
-             <div className="p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
+          <section className="lg:col-span-2 glass-card rounded-[3rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
+             <div className="p-5 sm:p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
                 <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                    <Navigation size={16} className="text-blue-600" /> Operational Deployment Field
                 </h2>
                 <div className="px-3 py-1 bg-blue-100 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-tighter border border-blue-200">{alerts.length} ORDERS</div>
              </div>
-             <div className="overflow-y-auto flex-1 p-8 space-y-6 custom-scrollbar">
+             <div className="overflow-y-auto flex-1 p-5 sm:p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
                   alerts.map((alert) => (
-                    <div key={alert.id} className="p-6 bg-white border border-gray-100 rounded-3xl relative group hover:border-blue-200 transition-all flex items-center justify-between gap-6 shadow-sm">
+                    <div key={alert.id} className="p-5 sm:p-6 bg-white border border-gray-100 rounded-3xl relative group hover:border-blue-200 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-200">
@@ -83,7 +83,7 @@ export function HighwayDepartmentDashboard() {
                         <p className="text-gray-900 font-bold text-sm leading-relaxed mb-1">{alert.action_text}</p>
                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Source: AI-ML Structural Router</div>
                       </div>
-                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                       <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm self-end sm:self-auto">
                          <MapPin size={24} />
                       </div>
                     </div>
@@ -98,31 +98,31 @@ export function HighwayDepartmentDashboard() {
           </section>
 
           <div className="space-y-6 flex flex-col">
-            <div className="glass-card p-8 rounded-[2.5rem] bg-blue-600 text-white shadow-xl shadow-blue-500/20 space-y-4">
+            <div className="glass-card p-6 sm:p-8 rounded-[2.5rem] bg-blue-600 text-white shadow-xl shadow-blue-500/20 space-y-4">
                <div className="flex items-center gap-3">
                   <Clock size={18} />
                   <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Global Critical Window</span>
                </div>
-               <div className="text-4xl font-black brand-font">{avgLeadTime}H</div>
+               <div className="text-3xl sm:text-4xl font-black brand-font">{avgLeadTime}H</div>
                <p className="text-blue-100 text-[11px] font-medium leading-relaxed opacity-80 italic">"Model suggests logistics deployment before T-minus 4h for optimal resource retention."</p>
             </div>
             
             <section className="glass-card rounded-[3rem] border-white/60 bg-white/70 overflow-hidden flex flex-col flex-1 shadow-xl premium-shadow">
-               <div className="p-8 border-b border-gray-100 bg-white/50">
+               <div className="p-5 sm:p-8 border-b border-gray-100 bg-white/50">
                   <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                      <ArrowRightLeft size={16} className="text-blue-600" /> Rapid Directives
                   </h2>
                </div>
-               <div className="p-8 space-y-4">
+               <div className="p-5 sm:p-8 space-y-4">
                   {[
                     'Deploy portable pumps',
                     'Sandbag critical underpasses',
                     'Coordinate arterial diversions',
                     'Strategic asset retrieval'
                   ].map((task, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-3xl text-[11px] font-bold text-gray-700 group hover:border-blue-200 transition-all cursor-default shadow-sm">
+                      <div key={i} className="flex items-center gap-3 sm:gap-4 p-4 bg-white border border-gray-100 rounded-3xl text-[10px] sm:text-[11px] font-bold text-gray-700 group hover:border-blue-200 transition-all cursor-default shadow-sm">
                        <CheckCircle2 size={16} className="text-emerald-500" />
-                       <span className="uppercase tracking-wide">{task}</span>
+                        <span className="uppercase tracking-wide leading-tight">{task}</span>
                     </div>
                   ))}
                </div>

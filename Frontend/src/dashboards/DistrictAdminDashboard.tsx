@@ -37,8 +37,8 @@ export function DistrictAdminDashboard() {
   }, 0);
 
   return (
-    <div className="pt-32 p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
-      <div className="max-w-7xl mx-auto space-y-10 py-6">
+    <div className="pt-24 sm:pt-28 lg:pt-32 p-4 sm:p-6 lg:p-8 h-full bg-transparent overflow-y-auto w-full custom-scrollbar">
+      <div className="max-w-7xl mx-auto space-y-10 py-4 sm:py-6">
         
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
           <div className="space-y-4">
@@ -46,7 +46,7 @@ export function DistrictAdminDashboard() {
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <Shield size={28} className="text-white" />
               </div>
-              <h1 className="text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
                 District <span className="text-blue-600">Collectorate</span>
               </h1>
             </div>
@@ -55,13 +55,13 @@ export function DistrictAdminDashboard() {
             </p>
           </div>
           
-          <div className="glass-card p-6 rounded-[2.2rem] border-white/60 bg-white/70 flex items-center gap-6 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform premium-shadow">
+          <div className="glass-card p-4 sm:p-6 rounded-[2.2rem] border-white/60 bg-white/70 flex items-center gap-4 sm:gap-6 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform premium-shadow w-full md:w-auto">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                <Users size={80} />
             </div>
             <div>
                <h3 className="text-gray-400 font-black uppercase tracking-widest text-[9px] mb-2">Population Exposure Index</h3>
-               <div className="text-4xl font-black text-red-600 flex items-center gap-3 brand-font">
+               <div className="text-3xl sm:text-4xl font-black text-red-600 flex items-center gap-3 brand-font break-all">
                  {Math.round(totalExposed).toLocaleString()} <Users size={24} className="text-red-500 opacity-20" />
                </div>
             </div>
@@ -71,15 +71,15 @@ export function DistrictAdminDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
-          <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[600px] shadow-xl premium-shadow">
-            <div className="p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
+          <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
+            <div className="p-5 sm:p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
               <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                  <BarChart3 size={16} className="text-blue-600" /> Administrative Risk Distribution
               </h2>
               <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter bg-blue-100 px-3 py-1 rounded-full border border-blue-200">{predictions.length} SECTORS</span>
             </div>
-            <div className="overflow-y-auto flex-1 custom-scrollbar">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-auto flex-1 custom-scrollbar">
+              <table className="w-full min-w-[540px] text-left border-collapse">
                 <thead className="text-gray-400 uppercase font-black text-[9px] tracking-[0.2em] sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-100">
                   <tr>
                     <th className="p-6">Sector Identity</th>
@@ -111,8 +111,8 @@ export function DistrictAdminDashboard() {
             </div>
           </section>
 
-          <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[600px] shadow-xl premium-shadow">
-             <div className="p-8 border-b border-gray-100 bg-orange-50/30 flex items-center justify-between">
+           <section className="glass-card rounded-[2.5rem] border-white/60 bg-white/70 overflow-hidden flex flex-col h-[500px] sm:h-[600px] shadow-xl premium-shadow">
+             <div className="p-5 sm:p-8 border-b border-gray-100 bg-orange-50/30 flex items-center justify-between">
                 <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
                    <Zap size={16} className="text-orange-600" /> Operational Directive Queue
                 </h2>
@@ -121,10 +121,10 @@ export function DistrictAdminDashboard() {
                    <span className="text-[10px] font-black text-orange-600 uppercase">{alerts.length} Directives</span>
                 </div>
              </div>
-             <div className="overflow-y-auto flex-1 p-8 space-y-6 custom-scrollbar">
+             <div className="overflow-y-auto flex-1 p-5 sm:p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
                   alerts.map((alert) => (
-                    <div key={alert.id} className="p-6 bg-white border border-gray-100 rounded-3xl flex justify-between items-center transition-all hover:border-blue-200 hover:shadow-md group shadow-sm">
+                      <div key={alert.id} className="p-5 sm:p-6 bg-white border border-gray-100 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 transition-all hover:border-blue-200 hover:shadow-md group shadow-sm">
                        <div className="flex-1">
                           <div className={`text-[10px] uppercase font-black tracking-[0.15em] mb-2 ${
                             alert.alert_level === 'RED' ? 'text-red-600' : 
@@ -139,7 +139,7 @@ export function DistrictAdminDashboard() {
                              <Clock size={12} /> Action Window: {alert.deadline_hrs}H
                           </div>
                        </div>
-                       <div className="ml-6 flex items-center gap-4">
+                        <div className="sm:ml-6 flex items-center gap-4 self-end sm:self-auto">
                           <button className="bg-blue-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-90 transition-transform">
                              <ArrowUpRight size={18} />
                           </button>
@@ -158,7 +158,7 @@ export function DistrictAdminDashboard() {
         </div>
 
         {/* ROI Strategy Section */}
-        <section className="glass-card p-10 rounded-[3rem] border-white/60 bg-white/70 shadow-xl premium-shadow space-y-8">
+        <section className="glass-card p-6 sm:p-10 rounded-[3rem] border-white/60 bg-white/70 shadow-xl premium-shadow space-y-8">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="space-y-1">
                  <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-3">
