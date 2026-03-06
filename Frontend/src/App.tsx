@@ -26,27 +26,27 @@ function Navigation() {
   if (isAuthPage) return null;
 
   return (
-    <nav style={{ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'rgba(255,255,255,0.55)' }} className="fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-7xl h-16 rounded-[1.8rem] flex items-center justify-between px-10 z-50 shadow-xl border border-white/70 active:scale-[0.99] transition-all duration-500">
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-blue-100">
-            <img src="/logo.svg" alt="CascadeNet logo" className="w-6 h-6" />
+    <nav style={{ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'rgba(255,255,255,0.55)' }} className="fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-7xl h-[4.25rem] rounded-[1.8rem] flex items-center justify-between px-5 md:px-7 z-50 shadow-xl border border-white/70 transition-all duration-500">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 flex items-center justify-center">
+            <img src="/logo.svg" alt="CascadeNet logo" className="w-7 h-7" />
           </div>
           <h1 className="text-xl font-black tracking-tight text-gray-900 brand-font leading-none">
             Cascade<span className="text-blue-600 ending-serif">Net</span>
           </h1>
         </div>
       </div>
-      <div className="flex gap-4 items-center">
-        <div className="hidden md:flex flex-col items-end mr-2 text-right">
+      <div className="flex items-center gap-3">
+        <div className="hidden md:flex flex-col items-end text-right leading-tight">
           <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none mb-1">Clearance Level</span>
-          <span className="text-[11px] font-black text-gray-400 uppercase tracking-tighter">{role}</span>
+          <span className="text-[11px] font-black text-gray-500 tracking-tight">{role}</span>
         </div>
         <button 
           onClick={logout} 
-          className="flex items-center gap-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 border border-red-100 active:scale-95"
+          className="h-10 min-w-[112px] flex items-center justify-center gap-2 bg-white/35 backdrop-blur-md hover:bg-red-600/90 text-gray-700 hover:text-white px-4 rounded-full font-black text-[10px] uppercase tracking-[0.14em] transition-all duration-300 border border-white/70 hover:border-red-500 shadow-md hover:shadow-lg hover:shadow-red-500/20 active:scale-95"
         >
-          <LogOut size={16} /> Logout
+          <LogOut size={14} className="shrink-0" /> <span>Logout</span>
         </button>
       </div>
     </nav>

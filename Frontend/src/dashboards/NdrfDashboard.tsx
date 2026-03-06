@@ -47,8 +47,8 @@ export function NdrfDashboard() {
   const criticalLead = leadTimes.sort((a, b) => a.hours_until_peak - b.hours_until_peak)[0];
 
   return (
-    <div className="flex h-full w-full bg-transparent">
-      <div className="w-96 h-full glass-card flex flex-col z-10 shadow-xl shrink-0 border-r border-black/5 bg-white/80">
+    <div className="flex h-full w-full bg-transparent p-4 gap-4">
+      <div className="w-96 h-full glass-card flex flex-col z-10 shadow-xl shrink-0 rounded-[2.5rem] border border-white/70 bg-white/80 overflow-hidden">
         <div className="pt-32 p-6 border-b border-black/5 bg-blue-50/30">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-black text-gray-900 brand-font tracking-tight text-lg flex items-center gap-3">
@@ -186,7 +186,7 @@ export function NdrfDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 relative h-full">
+      <div className="flex-1 relative h-full rounded-[2.5rem] overflow-hidden border border-white/60 shadow-xl">
         <MapView 
           zonesGeoJson={zones}
           infrastructureNodes={infra}

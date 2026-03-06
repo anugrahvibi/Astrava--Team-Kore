@@ -24,7 +24,7 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
     }));
 
   return (
-    <div className="absolute top-0 right-0 w-96 h-full bg-white/95 backdrop-blur-xl border-l border-gray-100 shadow-2xl flex flex-col z-40 animate-in slide-in-from-right duration-500">
+    <div className="absolute top-4 right-4 w-96 h-[calc(100%-2rem)] bg-white/95 backdrop-blur-xl border border-white/70 rounded-[2.5rem] shadow-2xl flex flex-col z-40 animate-in slide-in-from-right duration-500 overflow-hidden">
       <div className="pt-32 flex items-center justify-between p-8 border-b border-gray-100 bg-white/50">
         <div className="space-y-1">
           <h2 className="font-black text-sm tracking-widest flex items-center gap-2 text-gray-900 uppercase">

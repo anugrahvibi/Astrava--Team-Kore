@@ -49,7 +49,7 @@ export function Signup() {
         <form onSubmit={handleSignup} className="glass-card p-10 rounded-[3rem] shadow-xl border-white/60 bg-white/70 space-y-6 premium-shadow">
           <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Departmental Profile</label>
+              <label className="text-xs font-semibold text-gray-500 tracking-normal ml-1">Departmental profile</label>
               <div className="relative">
                 <select
                   required
@@ -68,7 +68,7 @@ export function Signup() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Official Identifier</label>
+              <label className="text-xs font-semibold text-gray-500 tracking-normal ml-1">Official identifier</label>
               <input
                 type="email"
                 placeholder="name@agency.gov"
@@ -79,7 +79,7 @@ export function Signup() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Secure Keyphrase</label>
+              <label className="text-xs font-semibold text-gray-500 tracking-normal ml-1">Secure keyphrase</label>
               <input
                 type="password"
                 placeholder="••••••••"

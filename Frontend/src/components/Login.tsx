@@ -52,7 +52,7 @@ export function Login() {
         <form onSubmit={handleLogin} className="glass-card p-10 rounded-[3rem] shadow-xl border-white/60 bg-white/70 space-y-6 premium-shadow">
           <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Secure Identifier</label>
+              <label className="text-xs font-semibold text-gray-500 tracking-normal ml-1">Secure identifier</label>
               <div className="relative">
                 <input
                   type="email"
@@ -65,7 +65,7 @@ export function Login() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Access Token</label>
+              <label className="text-xs font-semibold text-gray-500 tracking-normal ml-1">Access token</label>
               <input
                 type="password"
                 placeholder="••••••••"
