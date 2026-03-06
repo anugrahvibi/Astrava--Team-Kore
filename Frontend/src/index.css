@@ -15,15 +15,15 @@
 
 @layer base {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #18181b;
-    --card-foreground: #fafafa;
-    --border: #27272a;
-    --primary: #fafafa;
-    --primary-foreground: #09090b;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
+    --background: #f9fafb;
+    --foreground: #111827;
+    --card: #ffffff;
+    --card-foreground: #111827;
+    --border: #e5e7eb;
+    --primary: #111827;
+    --primary-foreground: #f9fafb;
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
     --green-safe: #10b981;
     --amber-watch: #f59e0b;
     --red-warning: #ef4444;
@@ -36,7 +36,7 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Verdana', system-ui, sans-serif;
   }
 }
 

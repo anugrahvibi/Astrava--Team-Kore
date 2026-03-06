@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import Map, { Source, Layer, Marker } from 'react-map-gl';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { InfrastructureNode, Prediction } from '../utils/dataFetcher';
+import type { InfrastructureNode, Prediction } from '../utils/dataFetcher';
 
 // Dummy token for development if no env var exists. 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
@@ -36,7 +36,7 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
   }, [predictions]);
 
   return (
-    <div className="w-full h-full relative bg-gray-950">
+    <div className="w-full h-full relative bg-gray-50">
       <Map
         mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={{
@@ -44,7 +44,7 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
           latitude: 9.993,
           zoom: 11
         }}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle="mapbox://styles/mapbox/light-v11"
         interactiveLayerIds={['zones-fill']}
         onClick={(e) => {
           if (e.features && e.features.length > 0) {
@@ -62,7 +62,7 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
             <Layer 
               id="zones-fill" 
               type="fill" 
-              paint={paintConfig}
+              paint={paintConfig as any}
             />
             <Layer
               id="zones-line"
