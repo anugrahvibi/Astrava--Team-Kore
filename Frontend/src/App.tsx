@@ -1,7 +1,7 @@
 import React from 'react';
 // CascadeNet: Advanced Intelligence & Response Control System
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 // Dashboards
 import { NdrfDashboard } from './dashboards/NdrfDashboard';
@@ -29,11 +29,11 @@ function Navigation() {
     <nav style={{ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'rgba(255,255,255,0.55)' }} className="fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-7xl h-16 rounded-[1.8rem] flex items-center justify-between px-10 z-50 shadow-xl border border-white/70 active:scale-[0.99] transition-all duration-500">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <Shield className="text-white" size={20} />
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-blue-100">
+            <img src="/logo.svg" alt="CascadeNet logo" className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-black tracking-tight text-gray-900 uppercase brand-font leading-none">
-            Cascade<span className="text-blue-600">Net</span>
+          <h1 className="text-xl font-black tracking-tight text-gray-900 brand-font leading-none">
+            Cascade<span className="text-blue-600 ending-serif">Net</span>
           </h1>
         </div>
       </div>

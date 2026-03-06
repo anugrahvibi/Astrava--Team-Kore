@@ -43,8 +43,8 @@ export function PublicPortal() {
              <Shield size={16} />
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Community Defense Network</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-gray-900 brand-font tracking-tight uppercase leading-[0.9]">
-             Kochi Flood <span className="text-blue-600">Intelligence</span>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 brand-font tracking-tight leading-[0.9]">
+             Kochi Flood <span className="text-blue-600 ending-serif">Intelligence</span>
           </h1>
           <p className="max-w-xl mx-auto text-gray-500 font-bold text-lg leading-relaxed">
              Access real-time predictive data for your sector. Powered by high-resolution LSTM models.

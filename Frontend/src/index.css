@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=Outfit:wght@300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=Plus+Jakarta+Sans:wght@400..800&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -16,6 +16,9 @@
 
 @layer base {
   :root {
+    --font-sans: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-ending: 'Instrument Sans', 'Plus Jakarta Sans', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
     --background: #f8fafc;
     --foreground: #0f172a;
     --card: #ffffff;
@@ -37,17 +40,48 @@
     --glass-border: rgba(255, 255, 255, 0.45);
   }
 
+  html {
+    font-size: 16px;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.005em;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
     overflow-x: hidden;
     height: 100vh;
   }
 
   h1, h2, h3, h4, .brand-font {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  .ending-serif {
+    font-family: var(--font-ending);
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  p, li {
+    line-height: 1.65;
+    max-width: 70ch;
+  }
+
+  button, input, select, textarea {
+    font-family: var(--font-sans);
   }
 }
 
