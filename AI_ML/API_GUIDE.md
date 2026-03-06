@@ -140,24 +140,93 @@ const data = await res.json();
 
 ---
 
-## Node Reference
+## III. 3D Map GeoJSON Endpoints (PRD Component 3)
 
-| ID | Type | Population Impact | Flood Risk |
-|----|------|-------------------|------------|
-| SUB_1 | substation | 50,000 | Medium |
-| SUB_2 | substation | 40,000 | Medium |
-| SUB_3 | substation | 45,000 | **High** |
-| SUB_4 | substation | 30,000 | **Extreme** |
-| SUB_5 | substation | 35,000 | Low |
-| PUMP_1–10 | water_pump | 12k–28k | Varies |
-| HOSP_1 | hospital | 80,000 | Medium |
-| HOSP_2 | hospital | 60,000 | High |
-| HOSP_3 | hospital | 40,000 | **Extreme** |
+### 8. Hourly Flood Grid
+```js
+// GET /flood-grid/{hour}?multiplier=1.0
+// hour: 0-24
+const res = await fetch(`${API}/flood-grid/12`);
+const data = await res.json();
+// data.features -> GeoJSON points for Mapbox
+```
 
-## CORS
-✅ All origins allowed — no proxy needed for development.
+### 9. Scenario Hourly Node/Edge States
+```js
+// GET /scenario/{id}/hourly-states
+const res = await fetch(`${API}/scenario/1/hourly-states`);
+const data = await res.json();
+// data.hourly_states['12'].nodes -> Node statuses at Hour 12
+// data.hourly_states['12'].edges -> Edge statuses at Hour 12
+```
 
-## Tips
-- Call `/simulate` once on app load and cache the result
-- `/harden` is expensive — debounce UI calls
-- Node `lat/lon` are real Kochi coordinates — use directly with Leaflet/Mapbox
+### 10. Population Impact Heatmap (Circles)
+```js
+// GET /impact-zones/{hour}?scenario_id=1
+const res = await fetch(`${API}/impact-zones/12`);
+const data = await res.json();
+// data.features -> GeoJSON Circle Features (radius_m in properties)
+```
+
+---
+
+## IV. Flood Prediction (PRD Component 1 — LSTM)
+
+### 11. All Zones Prediction
+```js
+// GET /predict/zones
+const res = await fetch(`${API}/predict/zones`);
+const data = await res.json();
+// data.predictions -> list of 6 zones with flood_probability & lead_time
+```
+
+### 12. Single Zone Prediction (supports Historical Mode)
+```js
+// GET /predict/zone/ZONE_FORT_KOCHI?scenario=2018_peak
+const res = await fetch(`${API}/predict/zone/ZONE_FORT_KOCHI?scenario=2018_peak`);
+```
+
+---
+
+## V. Actionability Layer (PRD Component 2 — 5-Stakeholders)
+
+### 13. Trigger All-Stakeholder Action Plan
+```js
+// POST /alerts/trigger?zone_id=ZONE_FORT_KOCHI
+const res = await fetch(`${API}/alerts/trigger?zone_id=ZONE_FORT_KOCHI`, { method: 'POST' });
+const data = await res.json();
+// data.action_plan.action_plans['dam_operator'] -> List of CWC actions
+// data.action_plan.action_plans['ndrf'] -> List of NDMA actions
+```
+
+### 14. Action Summary (Dashboard view)
+```js
+// GET /alerts/summary
+const res = await fetch(`${API}/alerts/summary`);
+```
+
+### 15. Lead Time Ticker
+```js
+// GET /lead-time
+const res = await fetch(`${API}/lead-time`);
+// data.lead_time_tickers -> { hours_until_peak, stakeholder_action_windows }
+```
+
+---
+
+## Node Reference (Updated)
+
+| ID | Type | Pop. Impact | Risk | Description |
+|----|------|-------------|------|-------------|
+| SUB_1-5 | substation | 30k-50k | Varies | Power Grid |
+| PUMP_1-10 | water_pump | 12k-28k | Varies | Water Supply |
+| HOSP_1-3 | hospital | 40k-80k | Varies | Healthcare |
+| ROAD_1-4 | road | 80k-150k | High | Transport |
+| TOWER_1-3 | comm_tower | 50k-200k | Medium | Communications |
+
+---
+
+## Implementation Notes
+- **Lead Time:** LSTM outputs time-to-peak (6-24h). Higher probability = shorter window.
+- **Actions:** Grounded in official CWC & NDMA SOP documentation.
+- **3D Tunnels:** Dependency lines on 3D map should be styled based on `status: BROKEN | ACTIVE`.

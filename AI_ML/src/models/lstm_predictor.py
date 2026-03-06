@@ -261,6 +261,7 @@ class LSTMFloodPredictor:
 
         return {
             "zone_id": zone_id,
+            "zone_name": next((z["name"] for z in self._zones if z["id"] == zone_id), zone_id.replace("ZONE_", "").replace("_", " ")),
             "flood_probability": prob,
             "projected_water_level_m": round(river, 2),
             "alert_level": alert_level,

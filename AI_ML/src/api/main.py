@@ -74,18 +74,26 @@ def _get_pipeline():
     """Lazy-initialize the pipeline on first request."""
     global _dep_graph, _hazard_gen, _scenarios, _baseline_results, _original_thresholds
 
-    if _dep_graph is None:
+    if _baseline_results is None:
         print("[API] Initializing pipeline...")
-        _dep_graph = DependencyGraph()
-        _dep_graph.build()
-        _original_thresholds = _dep_graph.get_node_original_thresholds()
+        # Avoid double-initializing if another thread is already working on it
+        # (For a true fix we'd use a threading lock, but this is a hackathon)
+        dg = DependencyGraph()
+        dg.build()
+        _original_thresholds = dg.get_node_original_thresholds()
 
-        _hazard_gen = HazardGenerator(n_scenarios=100)
-        _scenarios = _hazard_gen.generate_scenarios()
+        hg = HazardGenerator(n_scenarios=100)
+        sc = hg.generate_scenarios()
 
-        propagator = CascadePropagator(_dep_graph.graph, _hazard_gen)
-        _baseline_results = propagator.run_all_scenarios(_scenarios, use_multiprocessing=False)
-        propagator.save_results(_baseline_results)
+        propagator = CascadePropagator(dg.graph, hg)
+        results = propagator.run_all_scenarios(sc, use_multiprocessing=False)
+        propagator.save_results(results)
+
+        # Assign globals only AFTER everything is ready
+        _dep_graph = dg
+        _hazard_gen = hg
+        _scenarios = sc
+        _baseline_results = results
 
         print("[API] Pipeline ready.")
 
