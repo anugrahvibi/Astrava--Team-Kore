@@ -37,7 +37,7 @@ export interface Prediction {
   flood_probability: number;
   projected_water_level: number;
   lead_time_hours: number;
-  alert_level: 'GREEN' | 'AMBER' | 'RED';
+  alert_level: 'GREEN' | 'AMBER' | 'ORANGE' | 'RED';
 }
 
 export interface Alert {
@@ -94,7 +94,7 @@ export interface ROIRanking {
   status?: string;
 }
 
-// ─── Fetch Robustness (Emil's logic) ──────────────────────────────────────────
+// ─── Fetch Robustness ─────────────────────────────────────────────────────────
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_RETRIES = 2;
@@ -144,9 +144,9 @@ async function fetchJsonWithRetry<T>(
   return null;
 }
 
-// ─── Client-side in-memory cache (30s TTL for "live feel") ────────────────────
+// ─── Client-side in-memory cache (30s TTL) ────────────────────────────────────
 const _cache: Map<string, { data: any; expiry: number }> = new Map();
-const CACHE_TTL_MS = 30_000; // Reduced to 30s to match auto-refresh interval
+const CACHE_TTL_MS = 30_000;
 
 function cacheGet<T>(key: string): T | null {
   const entry = _cache.get(key);
@@ -176,12 +176,12 @@ export async function fetchZones(): Promise<any> {
   return fallback ?? { type: 'FeatureCollection', features: [] };
 }
 
-export async function fetchPredictions(): Promise<Prediction[]> {
-  const cacheKey = 'predictions';
+export async function fetchPredictions(scenario: string = 'current'): Promise<Prediction[]> {
+  const cacheKey = `predictions_${scenario}`;
   const cached = cacheGet<Prediction[]>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<{ predictions?: Prediction[] }>('/api/v1/ml/predict/zones');
+  const data = await fetchJsonWithRetry<{ predictions?: Prediction[] }>(`/api/v1/ml/predict/zones?scenario=${scenario}`);
   const predictions = data?.predictions ?? [];
   if (predictions.length > 0) {
     cacheSet(cacheKey, predictions);
@@ -208,12 +208,12 @@ export async function fetchInfrastructure(): Promise<InfrastructureData> {
   return fallback ?? { nodes: [], edges: [] };
 }
 
-export async function fetchActiveAlerts(role: string): Promise<Alert[]> {
-  const cacheKey = `alerts_${role}`;
+export async function fetchActiveAlerts(role: string, scenario: string = '2018_peak'): Promise<Alert[]> {
+  const cacheKey = `alerts_${role}_${scenario}`;
   const cached = cacheGet<Alert[]>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<any>('/api/v1/ml/alerts/summary?scenario=2018_peak');
+  const data = await fetchJsonWithRetry<any>(`/api/v1/ml/alerts/summary?scenario=${scenario}`);
   if (data && Array.isArray(data.zone_summaries)) {
     const allPlans: Alert[] = [];
     data.zone_summaries.forEach((zone: any) => {
@@ -265,12 +265,12 @@ export async function fetchVulnerabilities(): Promise<VulnerabilityData | null> 
   return null;
 }
 
-export async function fetchLeadTimes(): Promise<LeadTimeTicker[]> {
-  const cacheKey = 'lead_times';
+export async function fetchLeadTimes(scenario: string = '2018_peak'): Promise<LeadTimeTicker[]> {
+  const cacheKey = `lead_times_${scenario}`;
   const cached = cacheGet<LeadTimeTicker[]>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<{ lead_time_tickers?: LeadTimeTicker[] }>('/api/v1/ml/lead-times?scenario=2018_peak');
+  const data = await fetchJsonWithRetry<{ lead_time_tickers?: LeadTimeTicker[] }>(`/api/v1/ml/lead-times?scenario=${scenario}`);
   const tickers = data?.lead_time_tickers ?? [];
   if (tickers.length > 0) {
     cacheSet(cacheKey, tickers);

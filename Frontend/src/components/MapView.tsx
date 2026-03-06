@@ -80,46 +80,64 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
   useEffect(() => {
     const map = mapRef.current;
     const L = LRef.current;
-    if (!map || !L || predictions.length === 0) return;
+    if (!map || !L || !predictions || predictions.length === 0) return;
 
-    // Clear old circles
-    circleLayersRef.current.forEach(c => c.remove());
+    // Clear old circles safely
+    circleLayersRef.current.forEach(c => {
+      try { c.remove(); } catch (e) { }
+    });
     circleLayersRef.current = [];
 
     predictions.forEach((p) => {
+      if (!p || !p.zone_id) return;
       const coords = getZoneCoords(p.zone_id);
       const color =
         p.alert_level === 'RED' ? '#ef4444' :
-          p.alert_level === 'AMBER' ? '#f59e0b' : '#10b981';
+          (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE') ? '#f59e0b' : '#10b981';
       const pct = Math.round((p.flood_probability ?? 0) * 100);
       const isSelected = p.zone_id === selectedZoneId;
       const name = (p as any).zone_name || p.zone_id.replace('ZONE_', '').replace(/_/g, ' ');
 
-      const circle = L.circle(coords, {
-        radius: 1400,          // ~1.4km radius — clearly visible at zoom 12
-        color,
-        fillColor: color,
-        fillOpacity: p.alert_level === 'RED' ? 0.40 : p.alert_level === 'AMBER' ? 0.28 : 0.12,
-        weight: isSelected ? 4 : 2,
-        opacity: 0.9,
-      }).addTo(map);
+      try {
+        const circle = L.circle(coords, {
+          radius: 1400,          // ~1.4km radius — clearly visible at zoom 12
+          color,
+          fillColor: color,
+          fillOpacity: p.alert_level === 'RED' ? 0.40 : (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE' ? 0.28 : 0.12),
+          weight: isSelected ? 4 : 2,
+          opacity: 0.9,
+        }).addTo(map);
 
-      // Permanent label for RED/AMBER zones, hover tooltip for GREEN
-      if (p.alert_level !== 'GREEN') {
-        circle.bindTooltip(
-          `<div style="font-family:sans-serif;min-width:140px">
-            <b style="color:${color};font-size:13px">${name}</b><br/>
-            🌊 <b>${pct}%</b> flood risk<br/>
-            ⏱ Lead: ${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h
-          </div>`,
-          { permanent: true, direction: 'top', className: 'cascade-tooltip', offset: [0, -8] }
-        );
-      } else {
-        circle.bindTooltip(`<b>${name}</b> · ${pct}% — Stable`, { direction: 'top' });
+        // Permanent, high-fidelity card for RED/AMBER zones
+        if (p.alert_level !== 'GREEN') {
+          circle.bindTooltip(
+            `<div class="map-tooltip-card">
+              <div class="tooltip-header">
+                <span class="tooltip-title">${name}</span>
+                <span class="tooltip-badge" style="background:${color}20; color:${color}">${p.alert_level}</span>
+              </div>
+              <div class="tooltip-body">
+                <div class="tooltip-metric">
+                  <span class="metric-value"><span class="metric-icon">🌊</span>${pct}%</span>
+                  <span class="metric-label">Impact Risk</span>
+                </div>
+                <div class="tooltip-metric">
+                  <span class="metric-value"><span class="metric-icon">⏱</span>${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h</span>
+                  <span class="metric-label">Lead Time</span>
+                </div>
+              </div>
+            </div>`,
+            { permanent: true, direction: 'top', className: 'cascade-tooltip', offset: [0, -8] }
+          );
+        } else {
+          circle.bindTooltip(`<b>${name}</b> · ${pct}% — Stable`, { direction: 'top', className: 'cascade-tooltip-simple' });
+        }
+
+        circle.on('click', () => onZoneClick(p.zone_id));
+        circleLayersRef.current.push(circle);
+      } catch (err) {
+        console.warn("Map Circle Error:", err);
       }
-
-      circle.on('click', () => onZoneClick(p.zone_id));
-      circleLayersRef.current.push(circle);
     });
   }, [predictions, selectedZoneId]);
 
@@ -127,11 +145,14 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
   useEffect(() => {
     const map = mapRef.current;
     const L = LRef.current;
-    if (!map || !L || infrastructureNodes.length === 0) return;
+    if (!map || !L || !infrastructureNodes || infrastructureNodes.length === 0) return;
 
-    // Clear old node markers
-    nodeLayersRef.current.forEach(m => m.remove());
+    // Clear old node markers safely
+    nodeLayersRef.current.forEach(m => {
+      try { m.remove(); } catch (e) { }
+    });
     nodeLayersRef.current = [];
+
 
     const cfg: Record<string, { color: string; emoji: string }> = {
       substation: { color: '#ef4444', emoji: '⚡' },

@@ -28,10 +28,10 @@
     --primary-foreground: #ffffff;
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
-    
+
     --accent: #7c3aed;
     --accent-glow: rgba(124, 58, 237, 0.15);
-    
+
     --green-safe: #10b981;
     --amber-watch: #f59e0b;
     --red-warning: #ef4444;
@@ -59,7 +59,11 @@
     min-height: 100dvh;
   }
 
-  h1, h2, h3, h4, .brand-font {
+  h1,
+  h2,
+  h3,
+  h4,
+  .brand-font {
     font-family: var(--font-sans);
     font-weight: 700;
     line-height: 1.2;
@@ -75,12 +79,16 @@
     text-transform: none;
   }
 
-  p, li {
+  p,
+  li {
     line-height: 1.65;
     max-width: 70ch;
   }
 
-  button, input, select, textarea {
+  button,
+  input,
+  select,
+  textarea {
     font-family: var(--font-sans);
   }
 
@@ -120,10 +128,18 @@
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   }
 
-  .glow-red { box-shadow: 0 0 25px rgba(239, 68, 68, 0.15); }
-  .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.15); }
-  .glow-primary { box-shadow: 0 0 25px rgba(37, 99, 235, 0.15); }
-  
+  .glow-red {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.15);
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.15);
+  }
+
   .premium-shadow {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
   }
@@ -134,8 +150,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .5;
+  }
 }
 
 .map-container {
@@ -176,6 +199,116 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Leaflet Custom Tooltip Design ── */
+.leaflet-tooltip-pane .cascade-tooltip {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  overflow: visible;
+  /* Changed from hidden to show the spike */
+}
+
+/* Custom Curved Pointer Spike */
+.leaflet-tooltip-pane .cascade-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -7.5px;
+  /* Slight overlap for anti-aliasing */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.94);
+  /* Matching glassmorphism */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  /* Clip-path for smooth spike */
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.1));
+  z-index: -1;
+}
+
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+  display: none !important;
+  /* Hide the little triangle arrow for cleaner look */
+}
+
+.map-tooltip-card {
+  padding: 1rem 1.15rem;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tooltip-title {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.tooltip-badge {
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tooltip-body {
+  display: flex;
+  gap: 1rem;
+}
+
+.tooltip-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.metric-value {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-icon {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-right: 0.2rem;
 }
