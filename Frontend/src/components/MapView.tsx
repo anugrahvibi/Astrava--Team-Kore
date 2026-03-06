@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import Map, { Source, Layer, Marker } from 'react-map-gl';
-import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { InfrastructureNode, Prediction } from '../utils/dataFetcher';
 
@@ -22,21 +21,21 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
     // Generate fill colors based on prediction alerts
     const matchExpr: any[] = ['match', ['get', 'id']];
     predictions.forEach(p => {
-      let color = 'rgba(16, 185, 129, 0.2)'; // GREEN
-      if (p.alert_level === 'AMBER') color = 'rgba(245, 158, 11, 0.4)';
-      if (p.alert_level === 'RED') color = 'rgba(239, 68, 68, 0.5)';
+      let color = 'rgba(16, 185, 129, 0.1)'; // GREEN
+      if (p.alert_level === 'AMBER') color = 'rgba(245, 158, 11, 0.25)';
+      if (p.alert_level === 'RED') color = 'rgba(239, 68, 68, 0.35)';
       matchExpr.push(p.zone_id, color);
     });
-    matchExpr.push('rgba(100, 116, 139, 0.1)'); // default fallback
+    matchExpr.push('rgba(100, 116, 139, 0.05)'); // default fallback
 
     return {
       'fill-color': matchExpr,
-      'fill-opacity': 0.8,
+      'fill-opacity': 0.7,
     };
   }, [predictions]);
 
   return (
-    <div className="w-full h-full relative bg-gray-50">
+    <div className="w-full h-full relative bg-[#0f1117]">
       <Map
         mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={{
@@ -44,7 +43,7 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
           latitude: 9.993,
           zoom: 11
         }}
-        mapStyle="mapbox://styles/mapbox/light-v11"
+        mapStyle="mapbox://styles/mapbox/dark-v11"
         interactiveLayerIds={['zones-fill']}
         onClick={(e) => {
           if (e.features && e.features.length > 0) {
@@ -70,7 +69,7 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
               paint={{
                 'line-color': ['case', 
                   ['==', ['get', 'id'], selectedZoneId || ''], '#3b82f6',
-                  'rgba(255, 255, 255, 0.2)'
+                  'rgba(255, 255, 255, 0.1)'
                 ],
                 'line-width': ['case', ['==', ['get', 'id'], selectedZoneId || ''], 3, 1]
               }}
@@ -90,8 +89,11 @@ export function MapView({ zonesGeoJson, infrastructureNodes, predictions, onZone
           return (
             <Marker key={n.id} longitude={n.lon} latitude={n.lat} anchor="center">
               <div 
-                className="w-3 h-3 rounded-full border border-gray-950 shadow-md cursor-pointer transition-transform hover:scale-150"
-                style={{ backgroundColor: color }}
+                className="w-4 h-4 rounded-full border-2 border-white/20 shadow-2xl cursor-pointer transition-all hover:scale-150 hover:shadow-white/20"
+                style={{ 
+                   backgroundColor: color,
+                   boxShadow: `0 0 15px ${color}66`
+                }}
                 title={`${n.name} (${n.type})`}
               />
             </Marker>

@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-import { LeadTimeCounter } from '../components/LeadTimeCounter';
-import { Activity, Droplets, Target, CheckCircle2 } from 'lucide-react';
+import { Activity, Droplets, Target, CheckCircle2, Waves, Settings, AlertTriangle, Zap, Wind, Shield, ArrowRight } from 'lucide-react';
 import { fetchActiveAlerts, fetchSensorReadings, fetchPredictions } from '../utils/dataFetcher';
 import type { Alert, SensorReading, Prediction } from '../utils/dataFetcher';
-
 
 export function DamOperatorDashboard() {
   const [sensor, setSensor] = useState<SensorReading | null>(null);
@@ -30,101 +27,137 @@ export function DamOperatorDashboard() {
   const systemStatus = prediction?.alert_level === 'RED' ? 'CRITICAL' : prediction?.alert_level === 'AMBER' ? 'WARNING' : 'NORMAL';
 
   return (
-    <div className="p-8 h-full bg-gray-50 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="p-8 h-full bg-[#f8fafc] overflow-y-auto w-full custom-scrollbar">
+      <div className="max-w-7xl mx-auto space-y-10 py-6">
         
-        <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
-          <h1 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-3">
-            <Droplets className="text-blue-700" />
-            Dam Controller Operations
-          </h1>
-          <div className="flex gap-4">
-            <div className={`shadow-sm border px-4 py-2 rounded-xl text-sm font-sans font-semibold flex items-center gap-2 ${
-              systemStatus === 'CRITICAL' ? 'bg-red-50 border-red-200 text-red-700' :
-              systemStatus === 'WARNING' ? 'bg-amber-50 border-amber-200 text-amber-600' :
-              'bg-emerald-50 border-emerald-200 text-emerald-700'
-            }`}>
-              <Activity size={16} /> SYSTEM {systemStatus}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-black/5 pb-10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Waves size={28} className="text-white" />
+              </div>
+              <h1 className="text-4xl font-black text-gray-900 brand-font tracking-tight uppercase leading-none">
+                Hydraulic <span className="text-blue-600">Controller</span>
+              </h1>
             </div>
+            <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] pl-1 flex items-center gap-2">
+               <Activity size={14} className="text-blue-600 animate-pulse" /> Precision Flow & Infrastructure Stability
+            </p>
           </div>
+          
+          <div className="flex items-center gap-4">
+             <div className="glass-card px-6 py-4 rounded-[1.8rem] border-white/60 bg-white/70 flex items-center gap-4 shadow-xl premium-shadow">
+                <div className="text-right">
+                   <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Hydraulic Status</div>
+                   <div className={`text-sm font-black uppercase ${
+                     systemStatus === 'CRITICAL' ? 'text-red-600' : 
+                     systemStatus === 'WARNING' ? 'text-orange-600' : 'text-emerald-600'
+                   }`}>{systemStatus}</div>
+                </div>
+                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
+                  systemStatus === 'CRITICAL' ? 'bg-red-600' : 
+                  systemStatus === 'WARNING' ? 'bg-orange-600' : 'bg-emerald-600'
+                }`} />
+             </div>
+             <button className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all bg-white shadow-md">
+                <Settings size={20} />
+             </button>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard icon={<Droplets />} label="Reservoir Level" value={`${reservoirPercentage}%`} subtext="Safety Margin: High" color="blue" />
+          <StatCard icon={<Zap />} label="Inflow Pulse" value={`${sensor?.reservoir_inflow_m3s || 450} m³/s`} subtext="RISING INTENSITY" color="blue" />
+          <StatCard icon={<Activity />} label="Sensor Grid Accuracy" value="98.2%" subtext="Network Latency: 4ms" color="emerald" />
+          <StatCard icon={<Wind />} label="Downstream Impact" value={systemStatus} subtext="Lead Window: Active" color={systemStatus === 'NORMAL' ? 'emerald' : systemStatus === 'WARNING' ? 'amber' : 'red'} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1 border border-gray-200 bg-white shadow-sm p-6 rounded-2xl flex flex-col items-center justify-center">
-            <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4">Reservoir Level</h3>
-            <div className="relative w-40 h-40 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="80" cy="80" r="70" className="stroke-gray-800 fill-none min-w-full" strokeWidth="12" />
-                <circle 
-                  cx="80" cy="80" r="70" 
-                  className={`fill-none transition-all duration-1000 ${reservoirPercentage > 85 ? 'stroke-amber-500' : 'stroke-blue-500'}`} 
-                  strokeWidth="12" 
-                  strokeDasharray={`${(reservoirPercentage / 100) * 440} 440`}
-                />
-              </svg>
-              <div className="absolute text-center">
-                <div className="text-3xl font-black font-sans font-semibold text-gray-700">{reservoirPercentage}%</div>
-                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Capacity</div>
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          
+          <section className="lg:col-span-1 glass-card rounded-[3rem] border-white/60 p-10 shadow-xl flex flex-col items-center justify-center bg-white/70 premium-shadow">
+             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Capacity Saturation</h3>
+             <div className="relative w-48 h-48 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                   <circle cx="96" cy="96" r="80" className="stroke-gray-100 fill-none" strokeWidth="12" />
+                   <circle 
+                      cx="96" cy="96" r="80" 
+                      className={`fill-none transition-all duration-1000 ${reservoirPercentage > 85 ? 'stroke-red-600' : 'stroke-blue-600'}`} 
+                      strokeWidth="12" 
+                      strokeDasharray={`${(reservoirPercentage / 100) * 502} 502`}
+                      strokeLinecap="round"
+                   />
+                </svg>
+                <div className="absolute text-center">
+                   <div className="text-4xl font-black text-gray-900 brand-font tracking-tight">{reservoirPercentage}%</div>
+                   <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Saturated</div>
+                </div>
+             </div>
+             <p className="mt-8 text-center text-gray-500 text-xs font-bold leading-relaxed italic max-w-[180px]">"Slight vertical margin increase detected by LSTM models."</p>
+          </section>
 
-          <div className="col-span-1 flex flex-col gap-6">
-            <LeadTimeCounter hours={prediction?.lead_time_hours || 8} />
-            <div className="border border-gray-200 bg-white shadow-sm p-6 rounded-2xl flex-1">
-              <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4">Urgent Directives</h3>
-              <div className="space-y-3">
+          <section className="glass-card rounded-[3rem] border-white/60 overflow-hidden flex flex-col lg:col-span-2 shadow-xl bg-white/70 premium-shadow">
+             <div className="p-8 border-b border-gray-100 bg-blue-50/30 flex items-center justify-between">
+                <h2 className="font-black text-gray-900 uppercase tracking-widest text-xs flex items-center gap-3">
+                   <Shield size={16} className="text-blue-600" /> Administrative Gate Protocols
+                </h2>
+                <div className="px-3 py-1 bg-blue-100 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-tighter border border-blue-200">{alerts.length} ORDERS</div>
+             </div>
+             <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
                 {alerts.length > 0 ? (
                   alerts.map((alert) => (
-                    <div key={alert.id} className="p-3 bg-red-50 border border-red-100 rounded-xl">
-                      <div className="text-xs font-bold text-red-700 uppercase mb-1">ACTION REQUIRED</div>
-                      <div className="text-sm text-red-900 font-medium">{alert.action_text}</div>
+                    <div key={alert.id} className="p-6 bg-white border border-gray-100 rounded-3xl relative group hover:border-blue-200 transition-all flex items-center justify-between gap-6 shadow-sm">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                           <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-200">Priority Grid Alpha</div>
+                           <AlertTriangle size={14} className="text-amber-500 opacity-50" />
+                        </div>
+                        <p className="text-gray-900 font-bold text-sm leading-relaxed">{alert.action_text}</p>
+                        <div className="mt-2 text-[8px] font-black text-gray-400 uppercase tracking-widest">Target Sector: {alert.zone_id}</div>
+                      </div>
+                      <button className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95 whitespace-nowrap flex items-center gap-2">
+                         Execute Gate <ArrowRight size={14} />
+                      </button>
                     </div>
                   ))
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-8">
-                    <CheckCircle2 size={24} className="mb-2" />
-                    <p className="text-xs">No pending directives</p>
+                  <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-40 gap-4">
+                    <CheckCircle2 size={48} strokeWidth={1.5} />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Flow Equilibrium Synchronized</p>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
+             </div>
+          </section>
 
-          <div className="col-span-1 border border-gray-200 bg-white shadow-sm p-6 rounded-2xl">
-            <h3 className="text-xs uppercase font-bold text-gray-500 tracking-wide mb-4 flex items-center gap-2">
-              <Target size={14} /> Threshold Triggers
-            </h3>
-            <div className="space-y-4 font-sans font-semibold text-gray-700 text-sm">
-              <div className="border-l-2 border-red-500 pl-3">
-                <div className="text-red-700 font-bold">2403 ft (Full Res Lvl)</div>
-                <div className="text-gray-500 text-xs mt-1">Evacuation required downstream</div>
-              </div>
-              <div className="border-l-2 border-amber-500 pl-3">
-                <div className="text-amber-500 font-bold">2395 ft (Rule Curve)</div>
-                <div className="text-gray-500 text-xs mt-1">Red alert to districts</div>
-              </div>
-              <div className="border-l-2 border-blue-500 pl-3">
-                <div className="text-blue-700 font-bold">2390 ft (Blue Alert)</div>
-                <div className="text-gray-500 text-xs mt-1">Initial warnings</div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="text-xs text-gray-500 mb-1 tracking-wider">CURRENT ELEVATION (FT)</div>
-                <div className="text-xl font-bold text-gray-800">
-                  {sensor?.river_level_m ? (sensor.river_level_m * 3.28084 + 2300).toFixed(1) : '2396.4'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border border-gray-200 bg-white shadow-sm p-6 rounded-2xl mt-6 h-80 flex items-center justify-center text-gray-400">
-           <div className="text-center">
-              <Activity size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-xs font-bold uppercase">Real-time projection data unavailable</p>
-           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  subtext: string;
+  color: string;
+}
+
+function StatCard({ icon, label, value, subtext, color }: StatCardProps) {
+  const colorMap: Record<string, string> = {
+    blue: 'text-blue-600 bg-blue-50 border-blue-100',
+    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    red: 'text-red-600 bg-red-50 border-red-100',
+    amber: 'text-amber-600 bg-amber-50 border-amber-100',
+  };
+  
+  return (
+    <div className="glass-card p-6 rounded-[2.5rem] border-white/60 bg-white/70 hover:border-blue-200 transition-all group shadow-xl premium-shadow">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color] || colorMap.blue}`}>
+        {React.cloneElement(icon as any, { size: 20 })}
+      </div>
+      <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</div>
+      <div className="text-3xl font-black text-gray-900 brand-font tracking-tight mb-2">{value}</div>
+      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter italic">{subtext}</div>
     </div>
   );
 }

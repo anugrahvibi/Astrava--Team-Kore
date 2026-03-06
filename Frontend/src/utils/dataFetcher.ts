@@ -60,6 +60,38 @@ export interface SensorReading {
   reservoir_outflow_m3s: number;
 }
 
+export interface VulnerabilityData {
+  singularity_analysis: Record<string, {
+    betweenness: number;
+    pagerank: number;
+    failure_potential: number;
+    recovery_difficulty: number;
+  }>;
+  tactical_recommendations: Array<{
+    node_id: string;
+    criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+    mitigation_strategy: string;
+    impact_description: string;
+  }>;
+}
+
+export interface LeadTimeTicker {
+  zone_id: string;
+  alert_level: string;
+  flood_probability_pct: number;
+  hours_until_peak: number;
+  stakeholder_action_windows: Record<string, number>;
+  status: 'CRITICAL' | 'URGENT' | 'MONITORING';
+}
+
+export interface ROIRanking {
+  node_id: string;
+  original_impact: number;
+  lives_saved: number;
+  lives_saved_per_rupee: number;
+  status?: string;
+}
+
 export async function fetchZones(): Promise<any> {
   try {
     const res = await fetch('/api/graph'); // Infrastructure graph for map
@@ -150,6 +182,47 @@ export async function fetchCascadeAnalysis(zoneId: string): Promise<any> {
     console.warn("Cascade analysis fetch failed", e);
   }
   return null;
+}
+
+export async function fetchVulnerabilities(): Promise<VulnerabilityData | null> {
+  try {
+    const res = await fetch('/api/analytics/vulnerability-map');
+    if (res.ok) return await res.json();
+  } catch (e) {
+    console.warn("Vulnerability map fetch failed", e);
+  }
+  return null;
+}
+
+export async function fetchLeadTimes(): Promise<LeadTimeTicker[]> {
+  try {
+    const res = await fetch('/api/lead-time');
+    if (res.ok) {
+      const data = await res.json();
+      return data.lead_time_tickers;
+    }
+  } catch (e) {
+    console.warn("Lead time fetch failed", e);
+  }
+  return [];
+}
+
+export async function fetchROIRankings(): Promise<ROIRanking[]> {
+  try {
+    const res = await fetch('/api/roi/rank');
+    if (res.ok) {
+      const data = await res.json();
+      return data.top_10_by_roi.map((item: any) => ({
+        node_id: item.node_id,
+        impact_reduction: item.lives_saved,
+        lives_saved: item.approximate_lives_saved,
+        lives_saved_per_rupee: item.lives_saved_per_rupee
+      }));
+    }
+  } catch (e) {
+    console.warn("ROI rankings fetch failed", e);
+  }
+  return [];
 }
 
 

@@ -1,39 +1,50 @@
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { NdrfDashboard } from './dashboards/NdrfDashboard';
 import { DamOperatorDashboard } from './dashboards/DamOperatorDashboard';
 import { DistrictAdminDashboard } from './dashboards/DistrictAdminDashboard';
 import { PublicPortal } from './dashboards/PublicPortal';
 import { Login } from './components/Login';
 import { Signup } from './components/Signup';
-import { LogOut } from 'lucide-react';
+import { LogOut, Shield } from 'lucide-react';
 import { AuthProvider, useAuth } from './AuthContext';
 import type { Role } from './AuthContext';
+import React from 'react';
+import { HighwayDepartmentDashboard } from './dashboards/HighwayDepartmentDashboard';
 
 function Navigation() {
   const location = useLocation();
   const { role, logout } = useAuth();
-  const isAuthPage = location.pathname === '/' || location.pathname === '/signup';
+  const isAuthPage = location.pathname === '/' || location.pathname === '/signup' || location.pathname === '/login';
 
   if (isAuthPage) return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 border-b bg-white border-gray-200 flex items-center justify-between px-6 z-50 shadow-sm">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
-          <span>CascadeNet</span>
-        </h1>
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl h-16 rounded-2xl glass-card flex items-center justify-between px-8 z-50 shadow-xl border border-white/40 active:scale-[0.99] transition-all duration-300">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <Shield className="text-white" size={20} />
+          </div>
+          <h1 className="text-xl font-black tracking-tight text-gray-900 uppercase brand-font">
+            Cascade<span className="text-blue-600">Net</span>
+          </h1>
+        </div>
       </div>
-      <div className="flex gap-1 text-sm font-medium items-center">
-        <span className="text-gray-500 mr-4 font-semibold uppercase tracking-wider text-[10px] bg-gray-100 px-3 py-1 rounded-full">{role}</span>
-        <button onClick={logout} className="flex items-center gap-2 border-l border-gray-200 ml-2 pl-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors rounded-xl">
+      <div className="flex gap-4 items-center">
+        <div className="hidden md:flex flex-col items-end mr-2 text-right">
+          <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none mb-1">Authenticated As</span>
+          <span className="text-sm font-bold text-gray-700">{role} Access</span>
+        </div>
+        <button 
+          onClick={logout} 
+          className="flex items-center gap-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase transition-all duration-300 border border-red-200 active:scale-95"
+        >
           <LogOut size={16} /> Logout
         </button>
       </div>
     </nav>
   );
 }
-
-import React from 'react';
 
 function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, allowedRole: Role }) {
   const { role } = useAuth();
@@ -42,8 +53,6 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode, 
   }
   return <>{children}</>;
 }
-
-import { HighwayDepartmentDashboard } from './dashboards/HighwayDepartmentDashboard';
 
 function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
@@ -56,18 +65,27 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
+  const { user } = useAuth();
+  
   return (
-    <div className="h-screen w-screen bg-gray-50 text-gray-900 flex flex-col overflow-hidden" style={{ fontFamily: 'Verdana, sans-serif' }}>
-      <Navigation />
-      <main className="flex-1 mt-0 relative flex flex-col">
+    <div className="h-screen w-screen bg-[#f8fafc] text-gray-900 flex flex-col overflow-hidden relative font-sans">
+      {/* Dynamic ambient backgrounds */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 blur-[120px] rounded-full" />
+      </div>
+
+      {user && <Navigation />}
+
+      <main className={`flex-1 w-full h-full relative z-10 overflow-hidden ${user ? 'pt-24' : ''}`}>
         <Routes>
           <Route path="/" element={<AuthRedirect><Login /></AuthRedirect>} />
           <Route path="/signup" element={<AuthRedirect><Signup /></AuthRedirect>} />
-          <Route path="/ndrf" element={<ProtectedRoute allowedRole="NDRF"><div className="flex-1 mt-16"><NdrfDashboard /></div></ProtectedRoute>} />
-          <Route path="/dam" element={<ProtectedRoute allowedRole="Dam Controller"><div className="flex-1 mt-16"><DamOperatorDashboard /></div></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute allowedRole="District Collector"><div className="flex-1 mt-16"><DistrictAdminDashboard /></div></ProtectedRoute>} />
-          <Route path="/highway" element={<ProtectedRoute allowedRole="Highway Department"><div className="flex-1 mt-16"><HighwayDepartmentDashboard /></div></ProtectedRoute>} />
-          <Route path="/public" element={<ProtectedRoute allowedRole="Public"><div className="flex-1 mt-16"><PublicPortal /></div></ProtectedRoute>} />
+          <Route path="/ndrf" element={<ProtectedRoute allowedRole="NDRF"><NdrfDashboard /></ProtectedRoute>} />
+          <Route path="/dam" element={<ProtectedRoute allowedRole="Dam Controller"><DamOperatorDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute allowedRole="District Collector"><DistrictAdminDashboard /></ProtectedRoute>} />
+          <Route path="/highway" element={<ProtectedRoute allowedRole="Highway Department"><HighwayDepartmentDashboard /></ProtectedRoute>} />
+          <Route path="/public" element={<ProtectedRoute allowedRole="Public"><PublicPortal /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>
