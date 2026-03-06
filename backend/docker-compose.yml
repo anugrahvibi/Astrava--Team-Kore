@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # ─── Infrastructure ───────────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_DB: cascadenet
+      POSTGRES_USER: cascadenet
+      POSTGRES_PASSWORD: cascadenet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cascadenet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── CascadeNet Backend ───────────────────────────────────────────────────
+  api:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cascadenet:cascadenet@postgres:5432/cascadenet
+      REDIS_URL: redis://redis:6379
+      ML_SERVICE_URL: http://host.docker.internal:8000
+      PREDICTION_CYCLE_MINUTES: "30"
+      SECRET_KEY: "cascadenet-hackathon-secret"
+      APP_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:

@@ -1,0 +1,211 @@
+{
+    "dam_operations": {
+        "source": "CWC Operational Management System 2022, Section 4.2",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "reservoir_pct_min": 70.0,
+                "reservoir_pct_max": 84.9,
+                "action": "Monitor reservoir levels. Prepare gate crew for potential discharge. No gate opening required at this stage.",
+                "gate_state": "CLOSED",
+                "deadline_hrs": null
+            },
+            {
+                "alert_level": "RED",
+                "reservoir_pct_min": 85.0,
+                "reservoir_pct_max": 91.9,
+                "action": "Partial discharge required. Open Gate 2 at 30% capacity. Notify downstream communities via district collector.",
+                "gate_state": "GATE_2_30PCT",
+                "deadline_hrs": 0.5
+            },
+            {
+                "alert_level": "RED",
+                "reservoir_pct_min": 92.0,
+                "reservoir_pct_max": 96.9,
+                "action": "Full discharge required. Open Gate 2 and Gate 4 immediately. Issue public downstream alert. Notify NDRF.",
+                "gate_state": "GATE_2_AND_4",
+                "deadline_hrs": 0.25
+            },
+            {
+                "alert_level": "EMERGENCY",
+                "reservoir_pct_min": 97.0,
+                "reservoir_pct_max": 100.0,
+                "action": "EMERGENCY RELEASE. Open ALL GATES immediately. Evacuate all downstream zones. This is a life-safety emergency.",
+                "gate_state": "ALL_GATES",
+                "deadline_hrs": 0.0
+            }
+        ]
+    },
+    "ndrf_staging": {
+        "source": "NDRF District Staging Protocol, Godavari Basin",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "action": "Alert NDRF District Unit. Prepare staging equipment. No deployment required — monitoring phase.",
+                "deploy": false,
+                "deadline_hrs": null
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_b_godavari_mid",
+                "action": "Pre-position Team Alpha at coordinates (17.3850, 81.7938) — Zone B staging area. IMPORTANT: Access road NH-65 submerges in 2 hours. Deploy BEFORE T+1.5hrs.",
+                "coordinates": [
+                    17.385,
+                    81.7938
+                ],
+                "access_warning": "NH-65 closes T+2hrs. Use SH-41 bridge approach via NH-30. Confirm route availability before dispatch.",
+                "deploy": true,
+                "deadline_hrs": 1.5
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_a_godavari_upper",
+                "action": "Pre-position Team Beta at upstream staging point (17.4200, 81.7200). NH-516E closes T+1.5hrs — deploy immediately.",
+                "coordinates": [
+                    17.42,
+                    81.72
+                ],
+                "deploy": true,
+                "deadline_hrs": 1.0
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_c_godavari_lower",
+                "action": "Deploy maritime unit for coastal evacuation — delta zone C. Pre-position lifeboats at Coastal Centre (17.0050, 81.9400).",
+                "coordinates": [
+                    17.005,
+                    81.94
+                ],
+                "deploy": true,
+                "deadline_hrs": 2.5
+            }
+        ]
+    },
+    "evacuation": {
+        "source": "NDMA Flood Inundation Map, Godavari District 2023",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "action": "Issue preparedness advisory. Advise residents in flood-prone wards to prepare go-bags and identify nearest relief camp.",
+                "mandatory": false
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_b_godavari_mid",
+                "wards": [
+                    "3",
+                    "7",
+                    "11"
+                ],
+                "estimated_population": 4200,
+                "action": "Issue mandatory evacuation advisory for Wards 3, 7, 11 (~4,200 residents). Primary evacuation route: NH-30 North. NH-65 closes in 2 hours — begin evacuation immediately.",
+                "primary_route": "NH-30 North",
+                "secondary_route": "SH-41 bridge to inland camp",
+                "relief_camp": "Government High School — Sector 5 (Capacity: 6,000)",
+                "mandatory": true,
+                "deadline_hrs": 1.5
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_c_godavari_lower",
+                "wards": [
+                    "coastal_1",
+                    "coastal_2",
+                    "delta_east"
+                ],
+                "estimated_population": 8500,
+                "action": "Mandatory evacuation of all coastal wards. Route: SH-22 (one-way outbound). Maritime evacuation for delta villages accessible only by water.",
+                "primary_route": "SH-22 outbound",
+                "maritime_assets": "NDRF maritime unit",
+                "mandatory": true,
+                "deadline_hrs": 2.0
+            }
+        ]
+    },
+    "hospital": {
+        "source": "NDMA Hospital Disaster Management Protocol 2021",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "action": "Hospital Disaster Management Cell to convene. Check backup generator fuel levels. Prepare ground floor patient transfer plan.",
+                "deadline_hrs": null
+            },
+            {
+                "alert_level": "RED",
+                "action": "Activate backup power now. Move ALL ground floor patients to upper floors/wards. Cancel elective procedures. Contact blood bank for reserves. Expected power grid failure T+5.5hrs — hospital must be on backup by then.",
+                "deadline_hrs": 4.0
+            }
+        ]
+    },
+    "highway": {
+        "source": "NHAI Flood Emergency Protocol 2020",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "action": "Highway patrol to monitor low-lying stretches. Prepare closure signage and barricades.",
+                "deadline_hrs": null
+            },
+            {
+                "alert_level": "RED",
+                "action": "Close NH-65 at km marker 34. Deploy barricades on both approaches. Divert all traffic via NH-30 North. Coordinate with police for traffic management.",
+                "roads_to_close": [
+                    "NH-65 km 34"
+                ],
+                "diversion": "NH-30 North",
+                "deadline_hrs": 2.0
+            }
+        ]
+    },
+    "power": {
+        "source": "TRANSCO Flood Emergency Operations 2022",
+        "rules": [
+            {
+                "alert_level": "AMBER",
+                "action": "Pre-check backup connections to Grid 7. Verify Sub-station 4 flood barriers. Fuel all standby generators in flood-risk zone.",
+                "deadline_hrs": null
+            },
+            {
+                "alert_level": "RED",
+                "action": "Pre-reroute Sub-station 4 supply (40,000 homes) to Grid 7 immediately. Fuel backup generators at District Hospital Y. Sub-station 4 fails at T+5.5hrs — all rerouting must complete before then.",
+                "nodes_at_risk": [
+                    "power_substation_b4"
+                ],
+                "deadline_hrs": 5.0
+            }
+        ]
+    },
+    "public": {
+        "source": "NDMA Public Communication Template 2023",
+        "rules": [
+            {
+                "alert_level": "GREEN",
+                "message": "No flood risk in your area. Normal monitoring in progress. Check back for updates.",
+                "action_required": false
+            },
+            {
+                "alert_level": "AMBER",
+                "message": "FLOOD WATCH: Your area is under monitoring. Prepare go-bag: medication, documents, 3-day supplies. Identify nearest relief camp.",
+                "action_required": false,
+                "emergency_contacts": {
+                    "ndrf": "011-24363260",
+                    "district_emergency": "1077",
+                    "national_disaster": "1078"
+                }
+            },
+            {
+                "alert_level": "RED",
+                "zone_id": "zone_b_godavari_mid",
+                "message": "HIGH FLOOD RISK — YOUR AREA. LEAVE NOW via NH-30 North. NH-65 closes in 2 hours. Take medication, documents, 3 days supplies. Go to Government High School Sector 5.",
+                "leave_route": "NH-30 North",
+                "relief_camp": "Government High School — Sector 5",
+                "action_required": true,
+                "deadline_hrs": 1.5,
+                "emergency_contacts": {
+                    "ndrf": "011-24363260",
+                    "district_emergency": "1077",
+                    "national_disaster": "1078"
+                }
+            }
+        ]
+    }
+}

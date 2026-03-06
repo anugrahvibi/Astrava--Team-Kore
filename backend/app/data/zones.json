@@ -1,0 +1,122 @@
+{
+    "zones": [
+        {
+            "id": "zone_a_godavari_upper",
+            "name": "Zone A — Upper Godavari",
+            "region": "Godavari Basin",
+            "elevation_avg_m": 342.0,
+            "population": 68000,
+            "upstream_zone_ids": [],
+            "downstream_zone_ids": [
+                "zone_b_godavari_mid",
+                "zone_c_godavari_lower"
+            ],
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            81.700,
+                            17.450
+                        ],
+                        [
+                            81.820,
+                            17.450
+                        ],
+                        [
+                            81.820,
+                            17.520
+                        ],
+                        [
+                            81.700,
+                            17.520
+                        ],
+                        [
+                            81.700,
+                            17.450
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "id": "zone_b_godavari_mid",
+            "name": "Zone B — Mid Godavari (Rajahmundry)",
+            "region": "Godavari Basin",
+            "elevation_avg_m": 18.0,
+            "population": 142000,
+            "upstream_zone_ids": [
+                "zone_a_godavari_upper"
+            ],
+            "downstream_zone_ids": [
+                "zone_c_godavari_lower"
+            ],
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            81.720,
+                            17.300
+                        ],
+                        [
+                            81.920,
+                            17.300
+                        ],
+                        [
+                            81.920,
+                            17.440
+                        ],
+                        [
+                            81.720,
+                            17.440
+                        ],
+                        [
+                            81.720,
+                            17.300
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "id": "zone_c_godavari_lower",
+            "name": "Zone C — Lower Godavari Delta",
+            "region": "Godavari Basin",
+            "elevation_avg_m": 4.0,
+            "population": 95000,
+            "upstream_zone_ids": [
+                "zone_a_godavari_upper",
+                "zone_b_godavari_mid"
+            ],
+            "downstream_zone_ids": [],
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            81.600,
+                            16.900
+                        ],
+                        [
+                            82.000,
+                            16.900
+                        ],
+                        [
+                            82.000,
+                            17.290
+                        ],
+                        [
+                            81.600,
+                            17.290
+                        ],
+                        [
+                            81.600,
+                            16.900
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
