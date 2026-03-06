@@ -1,207 +1,194 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Shield, AlertTriangle, MapPin, Navigation, Info, ChevronRight, Activity, Globe, ShieldAlert, PhoneCall, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, MapPin, AlertTriangle, Shield, CheckCircle2, Navigation, Activity, ChevronRight, Info, InfoIcon } from 'lucide-react';
 import { fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
 import type { Prediction, Alert } from '../utils/dataFetcher';
 
 export function PublicPortal() {
   const [pin, setPin] = useState('');
-  const [searched, setSearched] = useState(false);
-  const [isHighRisk, setIsHighRisk] = useState(false);
-  const [matchingZone, setMatchingZone] = useState<Prediction | null>(null);
-  const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
+  const [searchResult, setSearchResult] = useState<Prediction | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [globalRisks, setGlobalRisks] = useState<Prediction[]>([]);
+  const [advisories, setAdvisories] = useState<Alert[]>([]);
 
   useEffect(() => {
-    async function loadInitial() {
-      const alerts = await fetchActiveAlerts('public_advisory');
-      setActiveAlerts(alerts);
+    async function loadPublicData() {
+      const [preds, alerts] = await Promise.all([
+        fetchPredictions(),
+        fetchActiveAlerts('Public')
+      ]);
+      setGlobalRisks(preds);
+      setAdvisories(alerts);
     }
-    loadInitial();
+    loadPublicData();
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pin.length < 3) return;
-    
+  const handleSearch = () => {
+    if (!pin) return;
     setIsSearching(true);
-    const predictions = await fetchPredictions();
-    const alerts = await fetchActiveAlerts('public_advisory');
-    
-    // Simple matching for demo/functionality
-    const criticalZone = predictions.find(p => p.alert_level !== 'GREEN');
-    
     setTimeout(() => {
-      setMatchingZone(criticalZone || null);
-      setIsHighRisk(!!criticalZone);
-      setActiveAlerts(alerts);
-      setSearched(true);
+      const found = globalRisks.find(p => p.zone_id.toLowerCase().includes(pin.toLowerCase()));
+      setSearchResult(found || null);
       setIsSearching(false);
     }, 800);
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-white relative overflow-hidden flex flex-col pt-24 custom-scrollbar">
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[180px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[180px] rounded-full" />
-      </div>
-
-      <div className="max-w-6xl mx-auto w-full px-8 flex-1 flex flex-col gap-16 relative z-10 pb-20">
+    <div className="h-full w-full bg-[#f8fafc] overflow-y-auto w-full custom-scrollbar">
+      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 space-y-16">
         
-        <div className="text-center space-y-6 pt-10">
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-4">
-             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Public Safety Access Active</span>
+        {/* Cinematic Header */}
+        <div className="text-center space-y-6 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full -z-10" />
+          <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full text-blue-600">
+             <Shield size={16} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Community Defense Network</span>
           </div>
-          <h1 className="text-6xl font-black brand-font tracking-tighter leading-none uppercase">
-            Citizen <span className="text-blue-500">Intelligence</span>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 brand-font tracking-tight uppercase leading-[0.9]">
+             Kochi Flood <span className="text-blue-600">Intelligence</span>
           </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto font-medium text-lg leading-relaxed">
-            Real-time flood risk assessment and safety protocols for Kochi residents. 
-            Official model data synchronized with municipal sensors.
+          <p className="max-w-xl mx-auto text-gray-500 font-bold text-lg leading-relaxed">
+             Access real-time predictive data for your sector. Powered by high-resolution LSTM models.
           </p>
         </div>
 
-        {!searched ? (
-          <div className="max-w-3xl mx-auto w-full">
-             <form onSubmit={handleSearch} className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                <div className="relative glass-card flex items-center p-2 rounded-[2.2rem] border border-white/10 shadow-2xl">
-                   <div className="pl-6 text-gray-500">
-                      <Search size={24} />
-                   </div>
-                   <input 
-                      type="text" 
-                      placeholder="Enter ZIP / PIN / Area Code"
-                      value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      className="flex-1 bg-transparent border-none py-6 px-4 text-lg text-white placeholder:text-gray-600 focus:outline-none"
-                   />
-                   <button 
-                      type="submit"
-                      disabled={isSearching}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-5 rounded-[1.8rem] font-black uppercase text-xs tracking-widest transition-all active:scale-95 shadow-xl shadow-blue-500/20 disabled:opacity-50"
-                   >
-                      {isSearching ? "Scanning..." : "Sync Status"}
-                   </button>
-                </div>
-             </form>
+        {/* Intelligence Search Bar */}
+        <div className="max-w-2xl mx-auto">
+          <div className="glass-card p-2 rounded-[2.5rem] flex items-center shadow-2xl border-white/60 bg-white/70 shadow-blue-600/5 premium-shadow">
+            <input 
+              type="text" 
+              placeholder="Enter your Ward / Sector ID (e.g. ZONE_A)"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              className="flex-1 bg-transparent px-8 h-16 outline-none text-lg font-bold text-gray-800 placeholder:text-gray-400 brand-font"
+            />
+            <button 
+              onClick={handleSearch}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-10 h-16 rounded-[2rem] font-black text-sm uppercase transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-3"
+            >
+              {isSearching ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search size={22} />}
+              Search Sector
+            </button>
           </div>
-        ) : (
-          <div className="w-full space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-             {isHighRisk ? (
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                  <div className="glass-card p-10 rounded-[2.5rem] border border-red-500/20 bg-red-600/5 relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:rotate-12 transition-transform">
-                        <AlertTriangle size={180} />
-                     </div>
-                     <div className="relative z-10 space-y-6">
-                        <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest w-fit glow-red">
-                           Critical Alert
-                        </div>
-                        <h2 className="text-4xl font-black brand-font tracking-tight uppercase leading-tight">
-                           Flooding Detected in <span className="text-red-500">{matchingZone?.zone_name}</span>
-                        </h2>
-                        <div className="flex items-center gap-6">
-                           <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-3xl">
-                              <div className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Probability</div>
-                              <div className="text-2xl font-black text-red-500">{(matchingZone?.flood_probability || 0 * 100).toFixed(0)}%</div>
-                           </div>
-                           <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-3xl">
-                              <div className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Impact Level</div>
-                              <div className="text-2xl font-black text-red-500">HIGH</div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
+        </div>
 
-                  <div className="space-y-6">
-                     <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-3 mb-2 px-2">
-                        <Activity size={16} className="text-red-500" /> Essential Directives
-                     </h3>
-                     <div className="space-y-4">
-                        {activeAlerts.length > 0 ? (
-                           activeAlerts.map((a) => (
-                              <div key={a.id} className="glass-card p-6 rounded-3xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex items-start gap-5">
-                                 <div className="w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 shrink-0">
-                                    <Shield size={20} />
-                                 </div>
-                                 <p className="text-gray-200 font-bold leading-relaxed">{a.action_text}</p>
-                              </div>
-                           ))
-                        ) : (
-                           <div className="glass-card p-6 rounded-3xl border border-white/5 space-y-3">
-                              <p className="text-gray-100 font-bold">• Evacuate low-lying areas immediately.</p>
-                              <p className="text-gray-100 font-bold">• Secure emergency survival kits.</p>
-                              <p className="text-gray-100 font-bold">• Follow municipal evacuation routes.</p>
-                           </div>
-                        )}
-                     </div>
-                  </div>
-               </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          
+          {/* Search Result Window */}
+          <div className="space-y-6">
+             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-3 pl-2">
+                <MapPin size={16} className="text-blue-600" /> Sector Analysis
+             </h2>
+             
+             {searchResult ? (
+                <div className="glass-card p-10 rounded-[3rem] border-white/60 bg-white shadow-xl premium-shadow space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                   <div className="flex justify-between items-start">
+                      <div>
+                         <h3 className="text-3xl font-black text-gray-900 brand-font uppercase leading-none">{searchResult.zone_name || searchResult.zone_id}</h3>
+                         <div className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Prediction Coordinates Verified</div>
+                      </div>
+                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm border ${
+                        searchResult.alert_level === 'RED' ? 'bg-red-50 text-red-600 border-red-200' :
+                        searchResult.alert_level === 'AMBER' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                        'bg-emerald-50 text-emerald-600 border-emerald-200'
+                      }`}>
+                        {searchResult.alert_level}
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-[#f8fafc] p-6 rounded-3xl border border-gray-100 shadow-sm">
+                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Flood Prob.</div>
+                         <div className="text-4xl font-black text-gray-900 brand-font">{(searchResult.flood_probability * 100).toFixed(0)}%</div>
+                      </div>
+                      <div className="bg-[#f8fafc] p-6 rounded-3xl border border-gray-100 shadow-sm">
+                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lead Time</div>
+                         <div className="text-4xl font-black text-blue-600 brand-font">{searchResult.lead_time_hours}H</div>
+                      </div>
+                   </div>
+
+                   <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl space-y-3">
+                      <div className="flex items-center gap-3 text-blue-600">
+                         <Info size={18} />
+                         <span className="text-xs font-black uppercase tracking-widest">Model Safety Bulletin</span>
+                      </div>
+                      <p className="text-gray-600 text-sm font-medium leading-relaxed italic">
+                        {searchResult.alert_level === 'RED' 
+                          ? "Severe risk detected. Evacuation of ground-level structures is prioritized via government channels." 
+                          : "Monitoring phase active. No immediate evacuation is recommended for this sector."}
+                      </p>
+                   </div>
+                </div>
+             ) : !isSearching && pin ? (
+                <div className="glass-card p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 opacity-50 shadow-sm">
+                   <AlertTriangle className="mx-auto text-gray-300" size={48} />
+                   <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Sector ID Not Recognized</div>
+                </div>
              ) : (
-               <div className="max-w-3xl mx-auto w-full glass-card p-16 rounded-[3rem] border border-emerald-500/20 bg-emerald-500/5 text-center space-y-8 relative overflow-hidden group">
-                  <div className="absolute -inset-24 bg-emerald-500/5 blur-[100px] rounded-full pointer-events-none" />
-                  <div className="w-24 h-24 bg-emerald-500/20 rounded-[2.5rem] flex items-center justify-center mx-auto border border-emerald-500/30 shadow-2xl shadow-emerald-500/20 group-hover:scale-110 transition-transform">
-                     <CheckCircle size={48} className="text-emerald-500" />
-                  </div>
-                  <div className="space-y-2 relative z-10">
-                     <h2 className="text-4xl font-black brand-font tracking-tight uppercase">Zone Status: Clear</h2>
-                     <p className="text-gray-400 font-medium text-lg italic">"No immediate threat detected for {pin}. Standard monitoring continues."</p>
-                  </div>
-               </div>
+                <div className="glass-card p-20 rounded-[3rem] border-white/60 bg-white text-center space-y-4 shadow-sm opacity-60">
+                   <Activity className="mx-auto text-blue-100" size={48} />
+                   <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Awaiting Parameter Input</div>
+                </div>
              )}
+          </div>
 
-             <div className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8">
-               <button 
-                  onClick={() => setSearched(false)}
-                  className="glass-card flex items-center justify-center gap-3 px-8 py-5 rounded-[2rem] border border-white/10 hover:border-white/20 transition-all font-black uppercase text-[10px] tracking-widest active:scale-95"
-               >
-                  New Scan
-               </button>
-               <button className="bg-red-600 hover:bg-red-500 text-white flex items-center justify-center gap-3 px-8 py-5 rounded-[2rem] transition-all font-black uppercase text-[10px] tracking-widest active:scale-95 shadow-2xl shadow-red-900/40">
-                  <PhoneCall size={16} /> Emergency 112
-               </button>
+          {/* Active Risks & Advisories Feed */}
+          <div className="space-y-6">
+             <div className="flex items-center justify-between px-2 mb-2">
+                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                   <Navigation size={16} className="text-blue-600" /> Active Advisories
+                </h2>
+                <div className="px-3 py-1 bg-amber-100 rounded-full text-[9px] font-black text-amber-600 uppercase border border-amber-200">Broadcast On</div>
+             </div>
+
+             <div className="space-y-4">
+                {advisories.length > 0 ? (
+                  advisories.map((alert) => (
+                    <div key={alert.id} className="glass-card p-6 rounded-[2.2rem] border-white/60 bg-white/70 shadow-xl premium-shadow flex items-start gap-6 group hover:translate-x-1 transition-transform">
+                       <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
+                          <Activity size={24} />
+                       </div>
+                       <div className="flex-1 space-y-2">
+                          <div className="flex justify-between items-center">
+                             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{alert.zone_id} BROADCAST</span>
+                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">T-{alert.deadline_hrs}H</div>
+                          </div>
+                          <p className="text-gray-900 font-bold text-sm leading-relaxed">{alert.action_text}</p>
+                       </div>
+                       <ChevronRight size={18} className="text-gray-300 mt-2" />
+                    </div>
+                  ))
+                ) : (
+                  <div className="glass-card p-12 rounded-[2.2rem] border-white/60 bg-white/70 text-center space-y-4 shadow-sm opacity-40">
+                     <CheckCircle2 className="mx-auto text-emerald-400" size={40} />
+                     <div className="text-xs font-black text-gray-500 uppercase tracking-widest">All Public Systems Normalized</div>
+                  </div>
+                )}
              </div>
           </div>
-        )}
+
+        </div>
 
         {/* Global Stats Footer */}
-        {!searched && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 border-t border-white/5 pt-16">
-             <div className="glass-card p-8 rounded-[2rem] border border-white/5 space-y-4">
-                <div className="w-10 h-10 bg-blue-600/10 rounded-xl flex items-center justify-center text-blue-500">
-                   <Globe size={20} />
-                </div>
-                <div>
-                   <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">System Load</div>
-                   <div className="text-2xl font-black text-white brand-font tracking-tight">GLOBAL_SYNC</div>
-                </div>
-             </div>
-             <div className="glass-card p-8 rounded-[2rem] border border-white/5 space-y-4">
-                <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-500">
-                   <ShieldAlert size={20} />
-                </div>
-                <div>
-                   <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Defense Readiness</div>
-                   <div className="text-2xl font-black text-white brand-font tracking-tight">KERALA_ZONE_A</div>
-                </div>
-             </div>
-             <div className="glass-card p-8 rounded-[2rem] border border-white/5 space-y-4">
-                <div className="w-10 h-10 bg-emerald-600/10 rounded-xl flex items-center justify-center text-emerald-500">
-                   <Activity size={20} />
-                </div>
-                <div>
-                   <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Model Precision</div>
-                   <div className="text-2xl font-black text-emerald-500 brand-font tracking-tight">94.2% ACC</div>
-                </div>
-             </div>
-          </div>
-        )}
+        <div className="pt-20 border-t border-black/5 grid grid-cols-2 md:grid-cols-4 gap-8">
+           <div className="space-y-2">
+              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Model Ver.</div>
+              <div className="text-xl font-black text-gray-900">LSTM_CASCADE_V3</div>
+           </div>
+           <div className="space-y-2">
+              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Live Sync</div>
+              <div className="text-xl font-black text-emerald-600 px-3 bg-emerald-50 rounded-lg inline-block">SECURE</div>
+           </div>
+           <div className="space-y-2">
+              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Zones Online</div>
+              <div className="text-xl font-black text-gray-900">{globalRisks.length} Municipal</div>
+           </div>
+           <div className="space-y-2">
+              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Update</div>
+              <div className="text-xl font-black text-gray-900">Just Now</div>
+           </div>
+        </div>
 
       </div>
     </div>
   );
 }
-

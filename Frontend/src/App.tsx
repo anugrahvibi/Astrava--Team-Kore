@@ -65,7 +65,7 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
-  const { user } = useAuth();
+  const { role } = useAuth();
   
   return (
     <div className="h-screen w-screen bg-[#f8fafc] text-gray-900 flex flex-col overflow-hidden relative font-sans">
@@ -75,9 +75,9 @@ function AppContent() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 blur-[120px] rounded-full" />
       </div>
 
-      {user && <Navigation />}
+      {role && <Navigation />}
 
-      <main className={`flex-1 w-full h-full relative z-10 overflow-hidden ${user ? 'pt-24' : ''}`}>
+      <main className={`flex-1 w-full h-full relative z-10 overflow-hidden ${role ? 'pt-24' : ''}`}>
         <Routes>
           <Route path="/" element={<AuthRedirect><Login /></AuthRedirect>} />
           <Route path="/signup" element={<AuthRedirect><Signup /></AuthRedirect>} />
