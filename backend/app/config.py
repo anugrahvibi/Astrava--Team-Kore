@@ -24,7 +24,7 @@ class Settings:
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
 
     # ── ML Service ───────────────────────────────────────────────────────────
-    ml_service_url: str = os.getenv("ML_SERVICE_URL", "http://localhost:8000")
+    ml_service_url: str = os.getenv("ML_SERVICE_URL", "http://localhost:8002")
 
     # ── Prediction Cycle ─────────────────────────────────────────────────────
     prediction_cycle_minutes: int = int(os.getenv("PREDICTION_CYCLE_MINUTES", "30"))

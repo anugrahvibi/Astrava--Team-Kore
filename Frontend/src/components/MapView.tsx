@@ -54,6 +54,8 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
 
+      // Guard against React Strict Mode double-invoking effects
+      if ((containerRef.current as any)._leaflet_id) return;
       const map = L.map(containerRef.current!, {
         center: [9.993, 76.295],
         zoom: 12,
