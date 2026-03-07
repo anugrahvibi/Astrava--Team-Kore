@@ -3,6 +3,9 @@ import type { Prediction, InfrastructureNode } from '../utils/dataFetcher';
 import { AlertCard } from './AlertCard';
 import { CascadeTimeline } from './CascadeTimeline';
 import { X, Activity, Shield } from 'lucide-react';
+import { useGsapAnimations } from '../utils/useGsapAnimations';
+import { useRef } from 'react';
+import { gsap } from 'gsap';
 
 interface ZonePanelProps {
   zoneId: string | null;
@@ -12,7 +15,27 @@ interface ZonePanelProps {
 }
 
 export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZonePanelProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  useGsapAnimations(containerRef, [zoneId]);
+
   if (!zoneId) return null;
+
+  const handleClose = () => {
+    if (contentRef.current) {
+      gsap.to(contentRef.current, {
+        x: 400,
+        opacity: 0,
+        scale: 0.95,
+        duration: 0.3,
+        ease: 'power2.in',
+        onComplete: onClose
+      });
+    } else {
+      onClose();
+    }
+  };
 
   // Mock cascade events for the panel
   const events = infrastructure
@@ -23,20 +46,24 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
       reason: `Hydraulic pressure exceeding ${node.flood_threshold}m threshold at T+${(i+1)*2}h`
     }));
 
-  return (
-    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-[calc(100%-1.5rem)] sm:w-96 max-w-[24rem] h-[calc(100%-1.5rem)] sm:h-[calc(100%-2rem)] bg-white/95 backdrop-blur-xl border border-white/70 rounded-[2.5rem] shadow-2xl flex flex-col z-40 animate-in slide-in-from-right duration-500 overflow-hidden">
-      <div className="pt-24 sm:pt-28 lg:pt-32 flex items-center justify-between p-5 sm:p-8 border-b border-gray-100 bg-white/50">
-        <div className="space-y-1">
-          <h2 className="font-black text-sm tracking-widest flex items-center gap-2 text-gray-900 uppercase">
-            <Activity size={18} className="text-blue-600" />
-            Sector Intelligence
-          </h2>
-          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-6">Live Prediction Matrix</p>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-2xl text-gray-400 hover:text-gray-900 transition-all active:scale-90">
-          <X size={20} />
-        </button>
-      </div>
+   return (
+    <div ref={containerRef} className="fixed inset-0 z-[60] flex items-center justify-end p-4 pointer-events-none">
+      <div 
+        ref={contentRef} 
+        className="w-[calc(100%-1.5rem)] sm:w-[420px] h-[calc(100%-1.5rem)] sm:h-[85vh] bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/70 backdrop-blur-3xl border border-white/80 rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.2)] flex flex-col pointer-events-auto gsap-appear origin-right"
+      >
+        <header className="h-24 px-8 border-b border-white/20 flex items-center justify-between bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/20 backdrop-blur-3xl shrink-0">
+          <div>
+            <div className="text-[16px] font-black text-blue-900 uppercase">Astrava Directive Hub</div>
+            <div className="text-[13px] font-black text-blue-800/40 uppercase mt-0.5">Sector Command</div>
+          </div>
+          <button 
+            onClick={handleClose} 
+            className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white/40 hover:bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/80 text-blue-900 border border-white/40 transition-all active:scale-90"
+          >
+            <X size={20} strokeWidth={2.5} />
+          </button>
+        </header>
 
       <div className="p-5 sm:p-8 overflow-y-auto flex-1 custom-scrollbar space-y-6 sm:space-y-10">
         <div>
@@ -45,38 +72,39 @@ export function ZonePanel({ zoneId, prediction, infrastructure, onClose }: ZoneP
 
         {prediction && (
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-2">
-              <div className="text-2xl font-black text-blue-600 brand-font">
+            <div className="bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/40 p-6 rounded-[2.2rem] border border-white/60 shadow-sm space-y-2">
+              <div className="text-3xl font-black text-blue-800 brand-font">
                 {prediction.projected_water_level.toFixed(1)}m
               </div>
-              <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                Peak Stage
+              <div className="text-[12px] text-blue-900/40 font-black uppercase">
+                Peak Saturation
               </div>
             </div>
-            <div className="bg-gray-50 p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-2">
-              <div className="text-2xl font-black text-gray-900 brand-font">
+            <div className="bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/40 p-6 rounded-[2.2rem] border border-white/60 shadow-sm space-y-2">
+              <div className="text-3xl font-black text-gray-950 brand-font">
                 {infrastructure.length}
               </div>
-              <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                Asset Count
+              <div className="text-[12px] text-blue-900/40 font-black uppercase">
+                Nodes Locked
               </div>
             </div>
           </div>
         )}
 
         <div className="space-y-6">
-          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Shield size={14} className="text-blue-600" /> Automated Response Directives
+          <h3 className="text-[11px] font-black text-gray-600 uppercase flex items-center gap-2">
+            <Shield size={14} className="text-blue-700" /> Automated Response Directives
           </h3>
           <CascadeTimeline events={events} />
         </div>
       </div>
       
-      <div className="p-5 sm:p-8 border-t border-gray-100 bg-gray-50/50">
-         <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">
-            System Synchronization: Online
+      <div className="p-8 border-t border-white/20 bg-white/95 backdrop-blur-3xl shadow-xl border border-white/60/30 backdrop-blur-xl shrink-0">
+         <div className="text-[11px] font-black text-blue-800/40 uppercase text-center">
+            Tactical Handshake: Secure
          </div>
       </div>
     </div>
+  </div>
   );
 }

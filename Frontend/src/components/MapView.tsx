@@ -93,7 +93,8 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
       const coords = getZoneCoords(p.zone_id);
       const color =
         p.alert_level === 'RED' ? '#ef4444' :
-          (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE') ? '#f59e0b' : '#10b981';
+        p.alert_level === 'ORANGE' ? '#f97316' : 
+        p.alert_level === 'AMBER' ? '#f59e0b' : '#10b981';
       const pct = Math.round((p.flood_probability ?? 0) * 100);
       const isSelected = p.zone_id === selectedZoneId;
       const name = (p as any).zone_name || p.zone_id.replace('ZONE_', '').replace(/_/g, ' ');
@@ -103,7 +104,7 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
           radius: 1400,          // ~1.4km radius — clearly visible at zoom 12
           color,
           fillColor: color,
-          fillOpacity: p.alert_level === 'RED' ? 0.40 : (p.alert_level === 'AMBER' || p.alert_level === 'ORANGE' ? 0.28 : 0.12),
+          fillOpacity: p.alert_level === 'RED' ? 0.40 : (p.alert_level === 'ORANGE' ? 0.32 : (p.alert_level === 'AMBER' ? 0.24 : 0.12)),
           weight: isSelected ? 4 : 2,
           opacity: 0.9,
         }).addTo(map);
@@ -113,24 +114,31 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
           circle.bindTooltip(
             `<div class="map-tooltip-card">
               <div class="tooltip-header">
-                <span class="tooltip-title">${name}</span>
-                <span class="tooltip-badge" style="background:${color}20; color:${color}">${p.alert_level}</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: ${color}"></div>
+                  <span class="tooltip-title">${name}</span>
+                </div>
+                <span class="tooltip-badge" style="background:${color}15; color:${color}; border: 1px solid ${color}25">${p.alert_level}</span>
               </div>
               <div class="tooltip-body">
                 <div class="tooltip-metric">
-                  <span class="metric-value"><span class="metric-icon">🌊</span>${pct}%</span>
-                  <span class="metric-label">Impact Risk</span>
+                  <span class="metric-value">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:4px; opacity:0.6"><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>${pct}%
+                  </span>
+                  <span class="metric-label">Risk Index</span>
                 </div>
                 <div class="tooltip-metric">
-                  <span class="metric-value"><span class="metric-icon">⏱</span>${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h</span>
-                  <span class="metric-label">Lead Time</span>
+                  <span class="metric-value">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:4px; opacity:0.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${(p as any).lead_time_hours?.toFixed(1) ?? '?'}h
+                  </span>
+                  <span class="metric-label">Window</span>
                 </div>
               </div>
             </div>`,
             { permanent: true, direction: 'top', className: 'cascade-tooltip', offset: [0, -8] }
           );
         } else {
-          circle.bindTooltip(`<b>${name}</b> · ${pct}% — Stable`, { direction: 'top', className: 'cascade-tooltip-simple' });
+          circle.bindTooltip(`<span><b>${name}</b> · ${pct}% · <span style="opacity:0.5; font-size:0.5rem; letter-spacing:0.1em">STABLE</span></span>`, { direction: 'top', className: 'cascade-tooltip-simple' });
         }
 
         circle.on('click', () => onZoneClick(p.zone_id));
@@ -154,27 +162,31 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
     nodeLayersRef.current = [];
 
 
-    const cfg: Record<string, { color: string; emoji: string }> = {
-      substation: { color: '#ef4444', emoji: '⚡' },
-      water_pump: { color: '#3b82f6', emoji: '💧' },
-      hospital: { color: '#10b981', emoji: '🏥' },
-      road: { color: '#f59e0b', emoji: '🛣️' },
-      comm_tower: { color: '#8b5cf6', emoji: '📡' },
+    const cfg: Record<string, { color: string; label: string }> = {
+      substation: { color: '#ef4444', label: 'PWR' },
+      water_pump: { color: '#3b82f6', label: 'H2O' },
+      hospital: { color: '#10b981', label: 'MED' },
+      road: { color: '#f59e0b', label: 'WAY' },
+      comm_tower: { color: '#8b5cf6', label: 'SIG' },
     };
 
     infrastructureNodes.forEach((node) => {
       if (!node.lat || !node.lon) return;
-      const c = cfg[node.type] ?? { color: '#64748b', emoji: '📍' };
+      const c = cfg[node.type] ?? { color: '#64748b', label: 'LOC' };
       const icon = L.divIcon({
         html: `<div style="
-          width:22px;height:22px;border-radius:50%;
-          background:${c.color};border:2px solid white;
-          box-shadow:0 2px 8px ${c.color}99;
+          width:24px;height:24px;border-radius:8px;
+          background:${c.color}20; border:1.5px solid ${c.color}80;
+          backdrop-filter:blur(8px);
           display:flex;align-items:center;justify-content:center;
-          font-size:11px;cursor:pointer;">${c.emoji}</div>`,
+          font-size:7px; font-weight:900; color:${c.color};
+          box-shadow:0 4px 12px ${c.color}15;
+          cursor:pointer; transform:rotate(45deg);">
+            <div style="transform:rotate(-45deg)">${c.label}</div>
+          </div>`,
         className: '',
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
       });
       const marker = L.marker([node.lat, node.lon], { icon }).addTo(map);
       marker.bindTooltip(
@@ -190,34 +202,32 @@ export function MapView({ infrastructureNodes, predictions, onZoneClick, selecte
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
       {/* Risk Legend */}
-      <div style={{
+      <div className="glass-card" style={{
         position: 'absolute', bottom: 20, right: 20, zIndex: 1000,
-        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)',
-        borderRadius: 12, padding: '10px 14px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.08)',
-        fontFamily: 'sans-serif',
+        borderRadius: 20, padding: '12px 16px',
+        border: '1px solid rgba(255,255,255,0.4)',
+        background: 'rgba(255,255,255,0.7)',
       }}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#64748b', marginBottom: 6 }}>
-          Risk Level
+        <div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#334155', marginBottom: 10, opacity: 1 }}>
+          Risk Matrix
         </div>
-        {([['#ef4444', 'RED – Critical'], ['#f59e0b', 'AMBER – Elevated'], ['#10b981', 'GREEN – Stable']] as const).map(([color, label]) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: '#374151' }}>{label}</span>
-          </div>
-        ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {([['#ef4444', 'CRITICAL'], ['#f97316', 'SEVERE'], ['#f59e0b', 'ELEVATED'], ['#10b981', 'STABLE']] as const).map(([color, label]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}40` }} />
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#020617', letterSpacing: '0.05em' }}>{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Loading overlay while predictions not yet arrived */}
       {predictions.length === 0 && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(2px)',
-          pointerEvents: 'none',
-        }}>
-          <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 13, color: '#64748b' }}>
-            ⏳ Loading live AI data...
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/20 backdrop-blur-md pointer-events-none">
+          <div className="flex items-center justify-center glass-card px-8 py-5 rounded-2xl shadow-xl min-w-[260px] border border-white/60 bg-white/95 backdrop-blur-3xl shrink-0">
+            <span className="text-[13px] font-black text-blue-600 uppercase whitespace-nowrap animate-pulse">
+              Synchronizing AI Data...
+            </span>
           </div>
         </div>
       )}

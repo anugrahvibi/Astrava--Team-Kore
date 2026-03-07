@@ -582,24 +582,29 @@ def impact_zones(hour: int, scenario_id: int = 1):
 # -- Flood Prediction Endpoints (PRD Component 1) ----------------------------
 
 @app.get('/predict/zones', tags=['Flood Prediction'])
-def predict_all_zones():
-    """Get flood predictions for all zones. Cached 60s."""
-    cached = _cache_get("predict_zones")
+def predict_all_zones(scenario: str = 'current'):
+    """Get flood predictions for all zones, optionally for a scenario. Cached 60s per scenario."""
+    cache_key = f"predict_zones_{scenario}"
+    cached = _cache_get(cache_key)
     if cached is not None:
         return cached
     lstm = _get_lstm()
-    results = lstm.predict_all_zones()
+    if scenario in ('2018_peak', 'moderate'):
+        results = lstm.simulate_scenario(scenario)
+    else:
+        results = lstm.predict_all_zones()
     red_count = sum(1 for r in results if r['alert_level'] == 'RED')
     orange_count = sum(1 for r in results if r['alert_level'] in ('ORANGE', 'AMBER'))
     response = {
         'status': 'success',
+        'scenario': scenario,
         'total_zones': len(results),
         'red_zones': red_count,
         'orange_zones': orange_count,
         'overall_threat_level': 'RED' if red_count > 0 else ('ORANGE' if orange_count > 0 else 'GREEN'),
         'predictions': results,
     }
-    _cache_set("predict_zones", response)
+    _cache_set(cache_key, response)
     return response
 
 

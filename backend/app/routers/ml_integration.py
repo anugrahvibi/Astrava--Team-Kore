@@ -146,10 +146,10 @@ async def get_impact_zones(
 
 # Flood Prediction Endpoints
 @router.get("/predict/zones")
-async def predict_all_zones():
+async def predict_all_zones(scenario: str = "current"):
     """Get flood predictions for all zones."""
     try:
-        return await ml_client.predict_all_zones()
+        return await ml_client.predict_all_zones(scenario=scenario)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Zone predictions failed: {str(e)}")
 
