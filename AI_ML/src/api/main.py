@@ -132,7 +132,7 @@ class HardenRequest(BaseModel):
 
 @app.on_event("startup")
 def _startup_prewarm():
-    """Pre-warm the heavy pipeline and LSTM model in background threads at server start."""
+    """Pre-warm the heavy pipeline, LSTM model, and ROI rankings in background threads at server start."""
     def _warm_pipeline():
         try:
             print("[STARTUP] Pre-warming cascade pipeline in background...")
@@ -149,8 +149,23 @@ def _startup_prewarm():
         except Exception as e:
             print(f"[STARTUP] LSTM warm failed: {e}")
 
+    def _warm_roi():
+        try:
+            # Wait for pipeline to be ready first
+            import time as _time
+            for _ in range(60):
+                if _baseline_results is not None:
+                    break
+                _time.sleep(2)
+            print("[STARTUP] Pre-computing ROI rankings in background...")
+            rank_roi()
+            print("[STARTUP] ROI rankings cached ✓")
+        except Exception as e:
+            print(f"[STARTUP] ROI pre-compute failed: {e}")
+
     threading.Thread(target=_warm_pipeline, daemon=True).start()
     threading.Thread(target=_warm_lstm, daemon=True).start()
+    threading.Thread(target=_warm_roi, daemon=True).start()
 
 
 @app.get("/", tags=["Health"])
@@ -284,7 +299,12 @@ def rank_roi():
     Rank all infrastructure nodes by ROI of hardening.
     Shows judges the optimal investment strategy.
     Returns top 10 nodes sorted by Lives-Saved-Per-Rupee.
+    Cached for 24h — expensive computation.
     """
+    cached = _cache_get("roi_rank")
+    if cached is not None:
+        return cached
+
     dg, gen, scenarios, baseline_results = _get_pipeline()
     roi_calc = ROICalculator()
     COST = 1_000_000  # 10 lakh INR per node hardening
@@ -307,12 +327,15 @@ def rank_roi():
         reverse=True,
     )
 
-    return {
+    result = {
         "status": "success",
         "hardening_cost_per_node_inr": COST,
         "total_nodes_ranked": len(rankings),
         "top_10_by_roi": rankings[:10],
     }
+    # Cache for 24 hours — deterministic result, no need to recompute
+    _cache["roi_rank"] = (result, time.time() + 86400)
+    return result
 
 
 @app.post("/roi/allocate", tags=["What-If Analysis"])

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { fetchZones, fetchInfrastructure, fetchPredictions, fetchActiveAlerts, fetchROIRankings } from '../utils/dataFetcher';
+import { fetchZones, fetchPredictions, fetchActiveAlerts } from '../utils/dataFetcher';
 import type { Prediction, InfrastructureNode, Alert, ROIRanking } from '../utils/dataFetcher';
 import { Users, FileText, CheckCircle2, AlertCircle, Shield, ArrowUpRight, BarChart3, Activity, Zap, TrendingUp, Info, Clock, ArrowRight, Target } from 'lucide-react';
 import { useGsapAnimations } from '../utils/useGsapAnimations';
@@ -13,19 +13,27 @@ export function DistrictAdminDashboard() {
 
   useGsapAnimations(containerRef, [predictions, alerts, roiRankings]);
 
+  // Static ROI demo data — pre-baked for instant demo load
+  const DEMO_ROI: ROIRanking[] = [
+    { node_id: 'ERNAKULAM_MAIN_SUB', original_impact: 120000, lives_saved: 18400, lives_saved_per_rupee: 18.4 },
+    { node_id: 'FORT_KOCHI_HOSPITAL', original_impact: 95000, lives_saved: 14200, lives_saved_per_rupee: 14.2 },
+    { node_id: 'VYTTILA_HUB_SUB', original_impact: 88000, lives_saved: 12100, lives_saved_per_rupee: 12.1 },
+    { node_id: 'ALUVA_BRIDGE_NODE', original_impact: 74000, lives_saved: 9800, lives_saved_per_rupee: 9.8 },
+    { node_id: 'KAKKANAD_IT_SUB', original_impact: 61000, lives_saved: 7500, lives_saved_per_rupee: 7.5 },
+  ];
+
   useEffect(() => {
     async function init() {
-      const [zData, pData, aData, rData] = await Promise.all([
+      const [zData, pData, aData] = await Promise.all([
         fetchZones(),
         fetchPredictions('2018_peak'),
         fetchActiveAlerts('district_collector', '2018_peak'),
-        fetchROIRankings()
       ]);
       
       setZones(Array.isArray(zData) ? zData : []);
       setPredictions(pData);
       setAlerts(aData);
-      setRoiRankings(rData);
+      setRoiRankings(DEMO_ROI);
     }
     init();
   }, []);

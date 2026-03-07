@@ -31,7 +31,7 @@ export function NdrfDashboard() {
         fetchActiveAlerts('ndrf_rescue', scenario),
         fetchLeadTimes(scenario),
         fetchVulnerabilities(),
-        import('../utils/dataFetcher').then(m => m.fetchROIRankings())
+        import('../utils/dataFetcher').then(m => m.fetchROIRankings()).catch(() => [])
       ]);
       setZones(zData);
       setInfra(iData.nodes);
