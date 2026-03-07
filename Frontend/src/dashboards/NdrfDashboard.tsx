@@ -22,16 +22,22 @@ export function NdrfDashboard() {
 
   useGsapAnimations(containerRef, [predictions, alerts, leadTimes, vulnerabilities]);
 
+  const DEMO_ROI_NDRF = [
+    { node_id: 'ERNAKULAM_MAIN_SUB', original_impact: 120000, lives_saved: 18400, lives_saved_per_rupee: 0.0184 },
+    { node_id: 'FORT_KOCHI_HOSPITAL', original_impact: 95000, lives_saved: 14200, lives_saved_per_rupee: 0.0142 },
+    { node_id: 'VYTTILA_HUB_SUB', original_impact: 88000, lives_saved: 12100, lives_saved_per_rupee: 0.0121 },
+    { node_id: 'ALUVA_BRIDGE_NODE', original_impact: 74000, lives_saved: 9800, lives_saved_per_rupee: 0.0098 },
+  ];
+
   useEffect(() => {
     async function init() {
-      const [zData, iData, pData, aData, lData, vData, rData] = await Promise.all([
+      const [zData, iData, pData, aData, lData, vData] = await Promise.all([
         fetchZones(),
         fetchInfrastructure(),
         fetchPredictions(scenario),
         fetchActiveAlerts('ndrf_rescue', scenario),
         fetchLeadTimes(scenario),
         fetchVulnerabilities(),
-        import('../utils/dataFetcher').then(m => m.fetchROIRankings()).catch(() => [])
       ]);
       setZones(zData);
       setInfra(iData.nodes);
@@ -39,11 +45,12 @@ export function NdrfDashboard() {
       setAlerts(aData);
       setLeadTimes(lData);
       setVulnerabilities(vData);
-      setRoiRankings(rData);
+      setRoiRankings(DEMO_ROI_NDRF);
       setLastUpdated(new Date().toLocaleTimeString());
     }
     init();
   }, [scenario]);
+
 
 
   // Defensive copy before sorting to avoid direct state mutation in render pass

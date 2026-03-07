@@ -14,12 +14,13 @@ export function DistrictAdminDashboard() {
   useGsapAnimations(containerRef, [predictions, alerts, roiRankings]);
 
   // Static ROI demo data — pre-baked for instant demo load
+  // lives_saved_per_rupee × 100,000 = lives saved per ₹1L spent (displayed in UI)
   const DEMO_ROI: ROIRanking[] = [
-    { node_id: 'ERNAKULAM_MAIN_SUB', original_impact: 120000, lives_saved: 18400, lives_saved_per_rupee: 18.4 },
-    { node_id: 'FORT_KOCHI_HOSPITAL', original_impact: 95000, lives_saved: 14200, lives_saved_per_rupee: 14.2 },
-    { node_id: 'VYTTILA_HUB_SUB', original_impact: 88000, lives_saved: 12100, lives_saved_per_rupee: 12.1 },
-    { node_id: 'ALUVA_BRIDGE_NODE', original_impact: 74000, lives_saved: 9800, lives_saved_per_rupee: 9.8 },
-    { node_id: 'KAKKANAD_IT_SUB', original_impact: 61000, lives_saved: 7500, lives_saved_per_rupee: 7.5 },
+    { node_id: 'ERNAKULAM_MAIN_SUB', original_impact: 120000, lives_saved: 18400, lives_saved_per_rupee: 0.0184 },
+    { node_id: 'FORT_KOCHI_HOSPITAL', original_impact: 95000, lives_saved: 14200, lives_saved_per_rupee: 0.0142 },
+    { node_id: 'VYTTILA_HUB_SUB', original_impact: 88000, lives_saved: 12100, lives_saved_per_rupee: 0.0121 },
+    { node_id: 'ALUVA_BRIDGE_NODE', original_impact: 74000, lives_saved: 9800, lives_saved_per_rupee: 0.0098 },
+    { node_id: 'KAKKANAD_IT_SUB', original_impact: 61000, lives_saved: 7500, lives_saved_per_rupee: 0.0075 },
   ];
 
   useEffect(() => {
