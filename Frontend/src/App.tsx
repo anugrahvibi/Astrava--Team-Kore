@@ -55,6 +55,55 @@ function Navigation() {
   const isAuthPage = location.pathname === '/' || location.pathname === '/signup' || location.pathname === '/login';
   const departmentKey = role ? roleToAlertDepartment[role] : null;
 
+  // ── ALL hooks must come before any conditional returns ──────────────────────
+  useEffect(() => {
+    if (isRendered && notificationRef.current) {
+      gsap.fromTo(notificationRef.current, 
+        { 
+          opacity: 0, 
+          scale: 0.95, 
+          y: -10,
+          transformOrigin: 'top right'
+        },
+        { 
+          opacity: 1, 
+          scale: 1, 
+          y: 0,
+          duration: 0.25, 
+          ease: 'power2.out' 
+        }
+      );
+    }
+  }, [isRendered]);
+
+  useEffect(() => {
+    if (!departmentKey || isAuthPage) return;
+    let isMounted = true;
+
+    const syncNotifications = async () => {
+      const items = await fetchActiveAlerts(departmentKey);
+      if (!isMounted) return;
+      const sorted = [...items].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+      setNotifications(sorted);
+      setUnreadCount(isNotificationsOpen ? 0 : sorted.length);
+    };
+
+    syncNotifications();
+    const interval = setInterval(syncNotifications, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [departmentKey, isNotificationsOpen, isAuthPage]);
+
+  useEffect(() => {
+    if (isNotificationsOpen) {
+      setUnreadCount(0);
+    }
+  }, [isNotificationsOpen]);
+
+  const visibleNotifications = useMemo(() => notifications.slice(0, 8), [notifications]);
+
   if (isAuthPage) return null;
 
   const toggleNotifications = () => {
@@ -81,56 +130,6 @@ function Navigation() {
       setIsNotificationsOpen(true);
     }
   };
-
-  useEffect(() => {
-    if (isRendered && notificationRef.current) {
-      gsap.fromTo(notificationRef.current, 
-        { 
-          opacity: 0, 
-          scale: 0.95, 
-          y: -10,
-          transformOrigin: 'top right'
-        },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          duration: 0.25, 
-          ease: 'power2.out' 
-        }
-      );
-    }
-  }, [isRendered]);
-
-  useEffect(() => {
-    if (!departmentKey) return;
-    let isMounted = true;
-
-    const syncNotifications = async () => {
-      const items = await fetchActiveAlerts(departmentKey);
-      if (!isMounted) return;
-      const sorted = [...items].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-      setNotifications(sorted);
-      setUnreadCount(isNotificationsOpen ? 0 : sorted.length);
-    };
-
-    syncNotifications();
-    const interval = setInterval(syncNotifications, 30000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [departmentKey, isNotificationsOpen]);
-
-  useEffect(() => {
-    if (isNotificationsOpen) {
-      setUnreadCount(0);
-    }
-  }, [isNotificationsOpen]);
-
-
-
-  const visibleNotifications = useMemo(() => notifications.slice(0, 8), [notifications]);
 
   const onNotificationClick = () => {
     if (!role) return;
