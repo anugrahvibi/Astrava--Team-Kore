@@ -43,8 +43,6 @@ export function NdrfDashboard() {
       setLastUpdated(new Date().toLocaleTimeString());
     }
     init();
-    const interval = setInterval(init, 30000);
-    return () => clearInterval(interval);
   }, [scenario]);
 
 

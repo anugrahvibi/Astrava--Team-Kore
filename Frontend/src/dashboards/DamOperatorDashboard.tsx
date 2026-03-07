@@ -23,8 +23,6 @@ export function DamOperatorDashboard() {
       setPrediction(pData.find(p => p.zone_id === 'zone_a_godavari_upper') || null);
     }
     init();
-    const interval = setInterval(init, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const reservoirPercentage = sensor?.reservoir_pct || 88.5;

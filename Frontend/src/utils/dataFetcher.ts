@@ -96,7 +96,8 @@ export interface ROIRanking {
 
 // ─── Fetch Robustness ─────────────────────────────────────────────────────────
 
-const DEFAULT_TIMEOUT_MS = 10000;
+const DEFAULT_TIMEOUT_MS = 30000;  // 30s for normal endpoints
+const SLOW_TIMEOUT_MS = 120000;   // 120s for heavy ML computation endpoints
 const DEFAULT_RETRIES = 2;
 
 function wait(ms: number) {
@@ -165,7 +166,7 @@ export async function fetchZones(): Promise<any> {
   const cached = cacheGet<any>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph');
+  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph', { timeoutMs: SLOW_TIMEOUT_MS });
   if (data) {
     cacheSet(cacheKey, data);
     return data;
@@ -194,7 +195,7 @@ export async function fetchInfrastructure(): Promise<InfrastructureData> {
   const cached = cacheGet<InfrastructureData>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph');
+  const data = await fetchJsonWithRetry<any>('/api/v1/ml/graph', { timeoutMs: SLOW_TIMEOUT_MS });
   if (data) {
     const result = { nodes: Object.values(data.nodes || {}), edges: data.edges || [] } as InfrastructureData;
     cacheSet(cacheKey, result);
@@ -257,7 +258,7 @@ export async function fetchVulnerabilities(): Promise<VulnerabilityData | null> 
   const cached = cacheGet<VulnerabilityData>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<VulnerabilityData>('/api/v1/ml/analytics/vulnerability-map');
+  const data = await fetchJsonWithRetry<VulnerabilityData>('/api/v1/ml/analytics/vulnerability-map', { timeoutMs: SLOW_TIMEOUT_MS });
   if (data) {
     cacheSet(cacheKey, data);
     return data;
@@ -283,7 +284,7 @@ export async function fetchROIRankings(): Promise<ROIRanking[]> {
   const cached = cacheGet<ROIRanking[]>(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJsonWithRetry<{ top_10_by_roi?: any[] }>('/api/v1/ml/roi/rank');
+  const data = await fetchJsonWithRetry<{ top_10_by_roi?: any[] }>('/api/v1/ml/roi/rank', { timeoutMs: SLOW_TIMEOUT_MS });
   if (data?.top_10_by_roi && Array.isArray(data.top_10_by_roi)) {
     const rankings = data.top_10_by_roi.map((item: any) => ({
       node_id: item.node_id,

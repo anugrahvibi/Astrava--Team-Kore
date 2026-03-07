@@ -89,10 +89,8 @@ function Navigation() {
     };
 
     syncNotifications();
-    const interval = setInterval(syncNotifications, 30000);
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
   }, [departmentKey, isNotificationsOpen, isAuthPage]);
 

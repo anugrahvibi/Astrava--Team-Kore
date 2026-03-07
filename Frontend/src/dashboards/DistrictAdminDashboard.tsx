@@ -17,8 +17,8 @@ export function DistrictAdminDashboard() {
     async function init() {
       const [zData, pData, aData, rData] = await Promise.all([
         fetchZones(),
-        fetchPredictions(),
-        fetchActiveAlerts('district_collector'),
+        fetchPredictions('2018_peak'),
+        fetchActiveAlerts('district_collector', '2018_peak'),
         fetchROIRankings()
       ]);
       
@@ -28,8 +28,6 @@ export function DistrictAdminDashboard() {
       setRoiRankings(rData);
     }
     init();
-    const interval = setInterval(init, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const totalExposed = predictions.reduce((acc, p) => {

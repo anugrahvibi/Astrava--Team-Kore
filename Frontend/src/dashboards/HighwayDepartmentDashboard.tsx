@@ -19,8 +19,6 @@ export function HighwayDepartmentDashboard() {
       setPredictions(pData);
     }
     init();
-    const interval = setInterval(init, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const criticalRoads = alerts.length;
